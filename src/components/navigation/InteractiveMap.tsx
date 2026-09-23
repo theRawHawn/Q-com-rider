@@ -3,8 +3,6 @@ import L from 'leaflet';
 import {
   Compass,
   CornerUpRight,
-  MapPin,
-  Store,
 } from 'lucide-react';
 import { DeliveryTask } from '../../types/delivery';
 import {
@@ -306,23 +304,14 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     };
   }, [currentMode, task.id, startCoord[0], startCoord[1], endCoord[0], endCoord[1]]);
 
-  const headerTitle =
-    currentMode === 'RIDER_TO_SELLER'
-      ? 'Navigate to Pickup'
-      : currentMode === 'AT_SELLER'
-      ? 'At Pickup Store'
-      : currentMode === 'SELLER_TO_CUSTOMER'
-      ? 'Navigate to Customer'
-      : 'At Delivery Location';
-
   const distanceText =
     currentMode === 'RIDER_TO_SELLER'
       ? '1.4 km · 5 mins'
       : currentMode === 'AT_SELLER'
-      ? '0.0 km · Arrived at Store'
+      ? '0.0 km · At Store'
       : currentMode === 'SELLER_TO_CUSTOMER'
       ? `${task.route.distanceKm} km · ${task.route.formattedEta}`
-      : '0.0 km · Arrived at Customer';
+      : '0.0 km · At Customer';
 
   return (
     <div
@@ -331,21 +320,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       {/* Map Canvas */}
       <div ref={mapContainerRef} className="absolute inset-0 z-0 w-full h-full" />
 
-      {/* Top Floating Navigation Header */}
-      <div className="z-10 flex items-start justify-between gap-2">
-        <div className="bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl border border-neutral-200/90 shadow-sm flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-[#009DE0] text-white flex items-center justify-center shrink-0 shadow-2xs">
-            {currentMode === 'RIDER_TO_SELLER' || currentMode === 'AT_SELLER' ? (
-              <Store className="w-3.5 h-3.5" />
-            ) : (
-              <MapPin className="w-3.5 h-3.5" />
-            )}
-          </div>
-          <span className="text-xs font-bold text-neutral-900 tracking-tight">
-            {headerTitle}
-          </span>
-        </div>
-
+      {/* Top Floating Controls */}
+      <div className="z-10 flex items-start justify-end">
         {/* Recenter Compass Button */}
         <button
           type="button"
@@ -368,10 +344,10 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           type="button"
           onClick={handleOpenGoogleMaps}
           className="flex-1 min-w-0 flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#009DE0] hover:bg-[#008bc7] active:bg-[#0079ad] text-white font-bold text-xs shadow-xs transition cursor-pointer whitespace-nowrap"
-          title="Open Turn-by-Turn in Google Maps"
+          title="Open Navigation in Google Maps"
         >
           <CornerUpRight className="w-3.5 h-3.5 text-white shrink-0" />
-          <span className="truncate">Google Maps Navigation</span>
+          <span className="truncate">Open Maps</span>
         </button>
       </div>
     </div>
