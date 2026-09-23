@@ -112,7 +112,7 @@ function generateRealisticRoadPath(start: [number, number], end: [number, number
   return densePath;
 }
 
-export type MapMode = 'RIDER_TO_SELLER' | 'SELLER_TO_CUSTOMER' | 'VERIFICATION';
+export type MapMode = 'RIDER_TO_SELLER' | 'AT_SELLER' | 'SELLER_TO_CUSTOMER' | 'VERIFICATION';
 
 interface InteractiveMapProps {
   task: DeliveryTask;
@@ -129,25 +129,31 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const mapInstanceRef = useRef<L.Map | null>(null);
   const roadPointsRef = useRef<[number, number][]>([]);
 
-  const isPickup =
-    task.orderStatus === 'placed' ||
-    task.orderStatus === 'picking' ||
-    task.orderStatus === 'packed';
-  const isInTransit = task.orderStatus === 'out_for_delivery';
+  const isHeadingToSeller = task.orderStatus === 'placed' || task.orderStatus === 'picking';
+  const isAtSeller = task.orderStatus === 'packed';
+  const isInTransitToCustomer = task.orderStatus === 'out_for_delivery';
+  const isAtCustomer = task.orderStatus === 'arriving';
 
   const currentMode: MapMode =
-    mode || (isPickup ? 'RIDER_TO_SELLER' : isInTransit ? 'SELLER_TO_CUSTOMER' : 'VERIFICATION');
+    mode ||
+    (isHeadingToSeller
+      ? 'RIDER_TO_SELLER'
+      : isAtSeller
+      ? 'AT_SELLER'
+      : isInTransitToCustomer
+      ? 'SELLER_TO_CUSTOMER'
+      : 'VERIFICATION');
 
   // Exact coordinates setup
   const riderCoord: [number, number] = [12.9783, 77.6335];
   const sellerCoord: [number, number] = [task.pickup.coordinates.lat, task.pickup.coordinates.lng];
   const customerCoord: [number, number] = [task.drop.coordinates.lat, task.drop.coordinates.lng];
 
-  const startCoord: [number, number] = isPickup ? riderCoord : sellerCoord;
-  const endCoord: [number, number] = isPickup ? sellerCoord : customerCoord;
+  const startCoord: [number, number] = isHeadingToSeller ? riderCoord : sellerCoord;
+  const endCoord: [number, number] = (isHeadingToSeller || isAtSeller) ? sellerCoord : customerCoord;
 
   const handleOpenGoogleMaps = () => {
-    if (isPickup) {
+    if (isHeadingToSeller || isAtSeller) {
       openRiderToSellerGoogleMaps(
         {
           lat: sellerCoord[0],
@@ -172,7 +178,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   const handleRecenter = () => {
     if (!mapInstanceRef.current) return;
-    if (currentMode === 'VERIFICATION') {
+    if (currentMode === 'AT_SELLER') {
+      mapInstanceRef.current.setView(sellerCoord, 18, { animate: true });
+    } else if (currentMode === 'VERIFICATION') {
       mapInstanceRef.current.setView(customerCoord, 18, { animate: true });
     } else {
       const bounds = L.latLngBounds([startCoord, endCoord]);
@@ -227,6 +235,23 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
       const bounds = L.latLngBounds([startCoord, endCoord]);
       map.fitBounds(bounds, { padding: [50, 50] });
+    } else if (currentMode === 'AT_SELLER') {
+      // At Seller Store location
+      L.marker(sellerCoord, { icon: createHubIcon() }).addTo(map);
+      L.marker([sellerCoord[0] - 0.00012, sellerCoord[1] + 0.00010], {
+        icon: createRiderIcon(),
+      }).addTo(map);
+
+      L.circle(sellerCoord, {
+        radius: 35,
+        color: '#009DE0',
+        fillColor: '#009DE0',
+        fillOpacity: 0.15,
+        weight: 2,
+        dashArray: '4, 4',
+      }).addTo(map);
+
+      map.setView(sellerCoord, 18);
     } else if (currentMode === 'SELLER_TO_CUSTOMER') {
       // Rider current position marker
       L.marker(startCoord, { icon: createRiderIcon() }).addTo(map);
@@ -253,7 +278,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       const bounds = L.latLngBounds([startCoord, endCoord]);
       map.fitBounds(bounds, { padding: [50, 50] });
     } else {
-      // Geofence arrived verification
+      // Geofence arrived verification at customer door
       L.marker(customerCoord, { icon: createDestinationIcon() }).addTo(map);
       L.marker([customerCoord[0] - 0.00015, customerCoord[1] + 0.00012], {
         icon: createRiderIcon(),
@@ -281,9 +306,27 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     };
   }, [currentMode, task.id, startCoord[0], startCoord[1], endCoord[0], endCoord[1]]);
 
+  const headerTitle =
+    currentMode === 'RIDER_TO_SELLER'
+      ? 'Navigate to Pickup'
+      : currentMode === 'AT_SELLER'
+      ? 'At Pickup Store'
+      : currentMode === 'SELLER_TO_CUSTOMER'
+      ? 'Navigate to Customer'
+      : 'At Delivery Location';
+
+  const distanceText =
+    currentMode === 'RIDER_TO_SELLER'
+      ? '1.4 km · 5 mins'
+      : currentMode === 'AT_SELLER'
+      ? '0.0 km · Arrived at Store'
+      : currentMode === 'SELLER_TO_CUSTOMER'
+      ? `${task.route.distanceKm} km · ${task.route.formattedEta}`
+      : '0.0 km · Arrived at Customer';
+
   return (
     <div
-      className={`relative w-full h-[52vh] sm:h-[56vh] rounded-3xl overflow-hidden border border-neutral-200/80 shadow-xs flex flex-col justify-between p-3.5 bg-[#e5e9ec] ${className}`}
+      className={`relative w-full h-[48vh] sm:h-[54vh] rounded-3xl overflow-hidden border border-neutral-200/80 shadow-xs flex flex-col justify-between p-3.5 bg-[#e5e9ec] ${className}`}
     >
       {/* Map Canvas */}
       <div ref={mapContainerRef} className="absolute inset-0 z-0 w-full h-full" />
@@ -292,14 +335,14 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       <div className="z-10 flex items-start justify-between gap-2">
         <div className="bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl border border-neutral-200/90 shadow-sm flex items-center gap-2">
           <div className="w-6 h-6 rounded-lg bg-[#009DE0] text-white flex items-center justify-center shrink-0 shadow-2xs">
-            {isPickup ? (
+            {currentMode === 'RIDER_TO_SELLER' || currentMode === 'AT_SELLER' ? (
               <Store className="w-3.5 h-3.5" />
             ) : (
               <MapPin className="w-3.5 h-3.5" />
             )}
           </div>
           <span className="text-xs font-bold text-neutral-900 tracking-tight">
-            {isPickup ? 'Navigate to Pickup' : 'Navigate to Customer'}
+            {headerTitle}
           </span>
         </div>
 
@@ -317,7 +360,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       {/* Bottom Floating Navigation Action Bar */}
       <div className="z-10 bg-white/95 backdrop-blur-md p-2.5 rounded-2xl border border-neutral-200/90 shadow-md flex items-center justify-between gap-2">
         <div className="shrink-0 px-3 py-2 rounded-xl bg-neutral-100 border border-neutral-200/80 font-bold text-xs text-neutral-900 whitespace-nowrap flex items-center justify-center">
-          {isPickup ? '1.4 km · 5 mins' : `${task.route.distanceKm} km · ${task.route.formattedEta}`}
+          {distanceText}
         </div>
 
         {/* Google Maps Turn-by-Turn Navigation Trigger */}
@@ -334,4 +377,3 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     </div>
   );
 };
-

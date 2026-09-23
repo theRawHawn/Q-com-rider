@@ -185,6 +185,7 @@ export interface DeliveryTask {
   payoutBreakdown: PayoutBreakdown;
   route: RouteInfo;
   deliveryOtp: string; // Required for dropoff verification
+  pickupToken?: string;
   isUrgentJobsite: boolean;
   assignedAt?: string;
   acceptedAt?: string;

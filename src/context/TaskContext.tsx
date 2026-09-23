@@ -69,6 +69,21 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const scheduleNextOrderAssignment = () => {
+    setTimeout(() => {
+      const remaining = deliveryTaskService.getBroadcastTasks();
+      let nextTask: DeliveryTask;
+      if (remaining.length > 0) {
+        nextTask = deliveryTaskService.acceptBroadcastTask(remaining[0].id);
+      } else {
+        const fresh = deliveryTaskService.generateIncomingTask();
+        nextTask = deliveryTaskService.acceptBroadcastTask(fresh.id);
+      }
+      refreshState();
+      showToast(`New order assigned: ${nextTask.orderNumber}! Navigate to pickup.`, 'info');
+    }, 2000);
+  };
+
   const verifyDeliveryOtp = (enteredOtp: string, proof?: ProofOfHandover): boolean => {
     if (!activeTask) return false;
     const task = activeTask;
@@ -81,6 +96,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
       refreshState();
       showToast(`Delivery verified! ₹${task.payoutBreakdown.totalPayout} credited to wallet.`, 'success');
+      scheduleNextOrderAssignment();
       return true;
     } else {
       showToast('Incorrect OTP. Please ask customer for 4-digit code.', 'error');
@@ -100,6 +116,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
       refreshState();
       showToast(`Contactless proof verified! ₹${task.payoutBreakdown.totalPayout} credited.`, 'success');
+      scheduleNextOrderAssignment();
       return true;
     }
     return false;
@@ -118,6 +135,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
       refreshState();
       showToast(`COD ₹${amountCollected} collected. ₹${task.payoutBreakdown.totalPayout} payout credited.`, 'success');
+      scheduleNextOrderAssignment();
       return true;
     }
     return false;

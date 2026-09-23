@@ -10,8 +10,8 @@ import {
   Camera,
   Banknote,
   ShieldCheck,
-  Lock,
   CornerUpRight,
+  Store,
 } from 'lucide-react';
 import { useTask } from '../../context/TaskContext';
 import { Button } from '../common/Button';
@@ -82,12 +82,11 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
     );
   }
 
-  const isAtPickupStage =
-    activeTask.orderStatus === 'placed' ||
-    activeTask.orderStatus === 'picking' ||
-    activeTask.orderStatus === 'packed';
-  const isInTransitStage = activeTask.orderStatus === 'out_for_delivery';
-  const isArrivedDropStage = activeTask.orderStatus === 'arriving';
+  // Exact 4-step linear delivery workflow
+  const isHeadingToSeller = activeTask.orderStatus === 'placed' || activeTask.orderStatus === 'picking';
+  const isAtSeller = activeTask.orderStatus === 'packed';
+  const isInTransitToCustomer = activeTask.orderStatus === 'out_for_delivery';
+  const isAtCustomer = activeTask.orderStatus === 'arriving';
 
   const handleOpenMaskedCall = (name: string, role: 'CUSTOMER' | 'SELLER' | 'DISPATCH_SUPPORT') => {
     setMaskedCallData({
@@ -136,9 +135,11 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
         <InteractiveMap
           task={activeTask}
           mode={
-            isAtPickupStage
+            isHeadingToSeller
               ? 'RIDER_TO_SELLER'
-              : isInTransitStage
+              : isAtSeller
+              ? 'AT_SELLER'
+              : isInTransitToCustomer
               ? 'SELLER_TO_CUSTOMER'
               : 'VERIFICATION'
           }
@@ -147,13 +148,14 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
 
       {/* Primary Operational Action Card */}
       <div className="p-4 rounded-3xl bg-white border border-neutral-200/80 shadow-xs space-y-4">
-        {/* Stage 1: Pickup Store */}
-        {isAtPickupStage && (
+        
+        {/* Step 1: Heading to Seller Location */}
+        {isHeadingToSeller && (
           <div className="space-y-3.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <span className="text-[10px] font-bold text-[#009DE0] uppercase tracking-wider block">
-                  Pickup Store
+                  Step 1: En Route to Store
                 </span>
                 <h3 className="text-base font-extrabold text-neutral-900">
                   {activeTask.pickup.storeName}
@@ -213,15 +215,67 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
               </div>
             )}
 
-            {/* Pickup Token & Handover */}
-            <div className="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-2.5">
+            <Button
+              variant="brand"
+              size="lg"
+              fullWidth
+              onClick={() => {
+                updateTaskStatus('packed');
+                showToast('Reached seller location. Verify token & package.', 'info');
+              }}
+              icon={<MapPin className="w-5 h-5" />}
+              className="font-bold py-3.5"
+            >
+              Reached Seller Location
+            </Button>
+          </div>
+        )}
+
+        {/* Step 2: At Seller Location (Token, Seal & Picture Step) */}
+        {isAtSeller && (
+          <div className="space-y-3.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block">
+                  Step 2: Store Handover
+                </span>
+                <h3 className="text-base font-extrabold text-neutral-900">
+                  {activeTask.pickup.storeName}
+                </h3>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsDelayModalOpen(true)}
+                  icon={<Clock className="w-3.5 h-3.5 text-amber-600" />}
+                  className="text-xs text-amber-800 border-amber-200 hover:bg-amber-50"
+                >
+                  Not Ready
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    handleOpenMaskedCall(activeTask.pickup.storeName, 'SELLER')
+                  }
+                  icon={<Phone className="w-3.5 h-3.5 text-neutral-700" />}
+                  className="text-xs"
+                >
+                  Call Store
+                </Button>
+              </div>
+            </div>
+
+            {/* Pickup Token & Handover Box */}
+            <div className="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[10px] text-neutral-500 uppercase font-bold block">
                     Store Pickup Token
                   </span>
                   <span className="font-mono text-xl font-black text-[#009DE0] tracking-wider">
-                    PK-8819
+                    {activeTask.pickupToken || 'PK-8819'}
                   </span>
                 </div>
                 {sellerTokenEntered ? (
@@ -234,7 +288,7 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
                     type="button"
                     onClick={() => {
                       setSellerTokenEntered(true);
-                      showToast('Pickup Token PK-8819 verified!', 'success');
+                      showToast('Pickup Token verified by seller!', 'success');
                     }}
                     className="px-3 py-1.5 rounded-xl bg-[#009DE0] hover:bg-[#008bc7] text-white text-xs font-bold shadow-xs transition cursor-pointer"
                   >
@@ -270,34 +324,32 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
               </div>
 
               {/* Photo proof */}
-              {sellerTokenEntered && (
-                <div>
-                  {activeTask.pickupProof ? (
-                    <div className="p-2.5 bg-emerald-50/60 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
-                      <span className="font-bold text-emerald-900 flex items-center gap-1.5">
-                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                        Audit Photo Attached
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenProofCamera('PICKUP')}
-                        className="text-emerald-700 font-bold hover:underline cursor-pointer text-xs"
-                      >
-                        Retake
-                      </button>
-                    </div>
-                  ) : (
+              <div>
+                {activeTask.pickupProof ? (
+                  <div className="p-2.5 bg-emerald-50/60 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
+                    <span className="font-bold text-emerald-900 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      Package Photo Attached
+                    </span>
                     <button
                       type="button"
                       onClick={() => handleOpenProofCamera('PICKUP')}
-                      className="w-full p-2.5 rounded-xl border border-dashed border-[#009DE0] bg-[#EBF7FD]/60 hover:bg-[#EBF7FD] text-[#009DE0] text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                      className="text-emerald-700 font-bold hover:underline cursor-pointer text-xs"
                     >
-                      <Camera className="w-4 h-4 text-[#009DE0]" />
-                      Take Package Photo (Optional)
+                      Retake
                     </button>
-                  )}
-                </div>
-              )}
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleOpenProofCamera('PICKUP')}
+                    className="w-full p-2.5 rounded-xl border border-dashed border-[#009DE0] bg-[#EBF7FD]/60 hover:bg-[#EBF7FD] text-[#009DE0] text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <Camera className="w-4 h-4 text-[#009DE0]" />
+                    Take Package Photo
+                  </button>
+                )}
+              </div>
             </div>
 
             <Button
@@ -310,20 +362,20 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
                 showToast('Pickup verified! Starting ride to customer.', 'success');
               }}
               icon={<PackageCheck className="w-5 h-5" />}
-              className="font-bold"
+              className="font-bold py-3.5"
             >
               Confirm Pickup & Start Delivery
             </Button>
           </div>
         )}
 
-        {/* Stage 2: In Transit to Customer */}
-        {isInTransitStage && (
+        {/* Step 3: En Route to Customer Location */}
+        {isInTransitToCustomer && (
           <div className="space-y-3.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">
-                  Customer Dropoff
+                  Step 3: En Route to Customer
                 </span>
                 <h3 className="text-base font-extrabold text-neutral-900">
                   {activeTask.drop.customerName}
@@ -378,20 +430,20 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
                 showToast('Arrived at customer location', 'info');
               }}
               icon={<MapPin className="w-5 h-5" />}
-              className="font-bold"
+              className="font-bold py-3.5"
             >
-              I Have Arrived at Customer Site
+              Reached Delivery Location
             </Button>
           </div>
         )}
 
-        {/* Stage 3: Arrived & Verification */}
-        {isArrivedDropStage && (
+        {/* Step 4: At Delivery Location (OTP & Delivery Photo Verification) */}
+        {isAtCustomer && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider block">
-                  Delivery Verification
+                  Step 4: Delivery Verification
                 </span>
                 <h3 className="text-base font-extrabold text-neutral-900">
                   {activeTask.drop.customerName}
@@ -430,24 +482,38 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
                 fullWidth
                 onClick={() => setIsOtpModalOpen(true)}
                 icon={<KeyRound className="w-4 h-4" />}
-                className="font-bold shadow-xs"
+                className="font-bold shadow-xs py-3.5"
               >
-                Enter Delivery OTP
+                Enter Delivery OTP & Complete
               </Button>
             </div>
 
-            {/* Alternative Handover Options */}
+            {/* Delivery Photo & Alternative Handover Options */}
             <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleOpenProofCamera('DELIVERY')}
+                className="p-3 rounded-2xl border border-neutral-200 hover:border-[#009DE0] bg-white text-left transition cursor-pointer"
+              >
+                <Camera className="w-4 h-4 text-[#009DE0] mb-1" />
+                <h4 className="text-xs font-black text-neutral-900">
+                  {activeTask.deliveryProof ? 'Photo Attached ✓' : 'Delivery Photo'}
+                </h4>
+                <p className="text-[10px] text-neutral-500">Proof picture</p>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setIsContactlessModalOpen(true)}
                 className="p-3 rounded-2xl border border-neutral-200 hover:border-[#009DE0] bg-white text-left transition cursor-pointer"
               >
-                <Camera className="w-4 h-4 text-[#009DE0] mb-1" />
+                <ShieldCheck className="w-4 h-4 text-emerald-600 mb-1" />
                 <h4 className="text-xs font-black text-neutral-900">Contactless Drop</h4>
-                <p className="text-[10px] text-neutral-500">Doorstep photo</p>
+                <p className="text-[10px] text-neutral-500">Doorstep drop</p>
               </button>
+            </div>
 
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setIsCodModalOpen(true)}
@@ -457,20 +523,16 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
                 <h4 className="text-xs font-black text-neutral-900">Cash on Delivery</h4>
                 <p className="text-[10px] text-neutral-500">Collect cash</p>
               </button>
-            </div>
 
-            <div className="pt-2 border-t border-neutral-100 flex items-center justify-between">
-              <span className="text-[11px] text-neutral-500">
-                Unable to contact customer?
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
+              <button
+                type="button"
                 onClick={() => setIsUnreachableModalOpen(true)}
-                className="text-xs text-rose-600 border-rose-200 hover:bg-rose-50 font-bold"
+                className="p-3 rounded-2xl border border-neutral-200 hover:border-rose-300 bg-white text-left transition cursor-pointer"
               >
-                Unreachable (5 min)
-              </Button>
+                <Clock className="w-4 h-4 text-rose-600 mb-1" />
+                <h4 className="text-xs font-black text-neutral-900">Unreachable</h4>
+                <p className="text-[10px] text-neutral-500">5 min wait</p>
+              </button>
             </div>
           </div>
         )}

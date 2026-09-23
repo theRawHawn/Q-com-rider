@@ -67,7 +67,7 @@ export const INITIAL_ACTIVE_TASK: DeliveryTask = {
   id: 'TASK-9021',
   orderId: 'ORD-88192',
   orderNumber: '#Q88192',
-  orderStatus: 'packed',
+  orderStatus: 'picking',
   placedAt: '10 mins ago',
   packedAt: '2 mins ago',
   estimatedDeliveryAt: '12 mins from now',
