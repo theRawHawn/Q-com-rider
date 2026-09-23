@@ -3,16 +3,13 @@ import L from 'leaflet';
 import {
   Compass,
   CornerUpRight,
-  ExternalLink,
   MapPin,
   Store,
-  Navigation as NavigationIcon,
 } from 'lucide-react';
 import { DeliveryTask } from '../../types/delivery';
 import {
   openRiderToSellerGoogleMaps,
   openSellerToCustomerGoogleMaps,
-  openGoogleMapsNavigation,
 } from '../../utils/navigation';
 
 // Clean Leaflet HTML DivIcons
@@ -293,29 +290,24 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
       {/* Top Floating Navigation Header */}
       <div className="z-10 flex items-start justify-between gap-2">
-        <div className="bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-neutral-200/90 shadow-sm flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#009DE0] text-white flex items-center justify-center shrink-0 shadow-2xs">
+        <div className="bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl border border-neutral-200/90 shadow-sm flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-[#009DE0] text-white flex items-center justify-center shrink-0 shadow-2xs">
             {isPickup ? (
-              <Store className="w-4 h-4" />
+              <Store className="w-3.5 h-3.5" />
             ) : (
-              <MapPin className="w-4 h-4" />
+              <MapPin className="w-3.5 h-3.5" />
             )}
           </div>
-          <div className="min-w-0">
-            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
-              {isPickup ? 'Navigate to Pickup' : 'Navigate to Customer'}
-            </span>
-            <span className="text-xs font-black text-neutral-900 truncate block max-w-[170px] sm:max-w-xs">
-              {isPickup ? task.pickup.storeName : task.drop.customerName}
-            </span>
-          </div>
+          <span className="text-xs font-bold text-neutral-900 tracking-tight">
+            {isPickup ? 'Navigate to Pickup' : 'Navigate to Customer'}
+          </span>
         </div>
 
         {/* Recenter Compass Button */}
         <button
           type="button"
           onClick={handleRecenter}
-          className="w-10 h-10 rounded-2xl bg-white/95 backdrop-blur-md text-neutral-800 shadow-sm border border-neutral-200/90 flex items-center justify-center hover:bg-neutral-50 active:scale-95 transition cursor-pointer"
+          className="w-10 h-10 rounded-2xl bg-white/95 backdrop-blur-md text-neutral-800 shadow-sm border border-neutral-200/90 flex items-center justify-center hover:bg-neutral-50 active:scale-95 transition cursor-pointer shrink-0"
           title="Recenter Route"
         >
           <Compass className="w-5 h-5 text-neutral-700" />
@@ -323,23 +315,20 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       </div>
 
       {/* Bottom Floating Navigation Action Bar */}
-      <div className="z-10 bg-white/95 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-neutral-200/90 shadow-md flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <div className="px-2.5 py-1 rounded-xl bg-neutral-100 border border-neutral-200/60 font-bold text-xs text-neutral-900">
-            {isPickup ? '1.4 km · 5 min' : `${task.route.distanceKm} km · ${task.route.formattedEta}`}
-          </div>
+      <div className="z-10 bg-white/95 backdrop-blur-md p-2.5 rounded-2xl border border-neutral-200/90 shadow-md flex items-center justify-between gap-2">
+        <div className="shrink-0 px-3 py-2 rounded-xl bg-neutral-100 border border-neutral-200/80 font-bold text-xs text-neutral-900 whitespace-nowrap flex items-center justify-center">
+          {isPickup ? '1.4 km · 5 mins' : `${task.route.distanceKm} km · ${task.route.formattedEta}`}
         </div>
 
         {/* Google Maps Turn-by-Turn Navigation Trigger */}
         <button
           type="button"
           onClick={handleOpenGoogleMaps}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#009DE0] hover:bg-[#008bc7] active:bg-[#0079ad] text-white font-bold text-xs shadow-xs transition cursor-pointer"
+          className="flex-1 min-w-0 flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#009DE0] hover:bg-[#008bc7] active:bg-[#0079ad] text-white font-bold text-xs shadow-xs transition cursor-pointer whitespace-nowrap"
           title="Open Turn-by-Turn in Google Maps"
         >
           <CornerUpRight className="w-3.5 h-3.5 text-white shrink-0" />
-          <span>Google Maps Navigation</span>
-          <ExternalLink className="w-3 h-3 text-white/80 shrink-0" />
+          <span className="truncate">Google Maps Navigation</span>
         </button>
       </div>
     </div>
