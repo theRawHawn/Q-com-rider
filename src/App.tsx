@@ -33,7 +33,7 @@ const MainAppContent: React.FC = () => {
         />
 
         {/* View Content Area */}
-        <main className="flex-1 min-w-0 p-3.5 pb-24 overflow-y-auto">
+        <main className="flex-1 min-w-0 p-3.5 pb-24 overflow-y-auto bg-[linear-gradient(180deg,#009DE0_0%,#009DE0_12px,rgba(0,157,224,0.40)_80px,rgba(0,157,224,0.15)_200px,rgba(0,157,224,0.03)_380px,rgba(247,249,250,0)_540px)] bg-no-repeat">
           {activeTab === 'home' && (
             <HomeOverview onNavigateTab={(tab) => setActiveTab(tab)} />
           )}

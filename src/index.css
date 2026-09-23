@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* Completely remove the scrolling side bar across all elements for a clean native mobile experience */
 html,
 body,
@@ -21,4 +28,19 @@ body {
   margin: 0;
   padding: 0;
   -webkit-overflow-scrolling: touch;
+}
+
+@keyframes wave-hand {
+  0% { transform: rotate(0deg) translateY(0); }
+  20% { transform: rotate(14deg) translateY(-2px); }
+  40% { transform: rotate(-8deg) translateY(-1px); }
+  60% { transform: rotate(12deg) translateY(-2px); }
+  80% { transform: rotate(-4deg) translateY(0); }
+  100% { transform: rotate(0deg) translateY(0); }
+}
+
+.animate-wave {
+  display: inline-block;
+  transform-origin: 75% 85%;
+  animation: wave-hand 1.4s cubic-bezier(0.4, 0, 0.2, 1) 1 forwards;
 }

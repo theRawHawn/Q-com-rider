@@ -96,11 +96,11 @@ export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => 
   return (
     <div className="space-y-4 pb-20 max-w-md mx-auto animate-in fade-in duration-200">
       {/* Top Greeting & Zone Context */}
-      <div className="flex items-center justify-between px-1 pt-1">
+      <div className="flex items-center justify-between px-1 pt-0.5 pb-1">
         <div>
-          <p className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Delivery Partner</p>
-          <h1 className="text-xl font-black text-neutral-900 tracking-tight">
-            Hi, {partner.name.split(' ')[0]}
+          <h1 className="text-xl font-black text-white tracking-tight drop-shadow-2xs flex items-center gap-1.5">
+            <span>Hi, {partner.name.split(' ')[0]}</span>
+            <span className="animate-wave select-none text-xl leading-none">👋</span>
           </h1>
         </div>
       </div>
@@ -132,10 +132,9 @@ export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => 
           <button
             type="button"
             onClick={handleGoOnline}
-            className="w-full py-3.5 px-6 rounded-2xl bg-[#009DE0] hover:bg-[#0082BD] active:bg-[#0074A8] text-white font-black text-sm shadow-[0_4px_16px_rgba(0,157,224,0.35)] transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 tracking-wide"
+            className="w-full py-3.5 px-6 rounded-2xl bg-[#009DE0] hover:bg-[#0082BD] active:bg-[#0074A8] text-white font-black text-sm shadow-[0_4px_16px_rgba(0,157,224,0.35)] transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center tracking-wide"
           >
-            <span>Go Online & Receive Orders</span>
-            <ArrowRight className="w-4 h-4 text-sky-100" />
+            <span>Go Online</span>
           </button>
         </div>
       )}
