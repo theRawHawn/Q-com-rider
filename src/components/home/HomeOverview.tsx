@@ -215,8 +215,8 @@ export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => 
               </span>
               <span className="text-xs font-bold text-neutral-900">{activeTask.orderNumber}</span>
             </div>
-            <span className="text-xs font-black text-[#009DE0] bg-[#EBF7FD] px-2.5 py-1 rounded-xl border border-[#009DE0]/20 tabular-nums">
-              ₹{activeTask.payoutBreakdown.totalPayout} Payout
+            <span className="text-xs font-semibold text-neutral-500 bg-neutral-100 px-2.5 py-1 rounded-xl border border-neutral-200">
+              {activeTask.estimatedDeliveryAt}
             </span>
           </div>
 

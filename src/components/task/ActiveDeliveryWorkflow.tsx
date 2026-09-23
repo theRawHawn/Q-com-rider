@@ -119,8 +119,8 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
           <span className="font-mono text-sm font-black text-neutral-900">
             {activeTask.orderNumber}
           </span>
-          <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80">
-            ₹{activeTask.payoutBreakdown.totalPayout} Payout
+          <span className="text-xs font-bold text-neutral-600 bg-neutral-100 px-2 py-0.5 rounded-full border border-neutral-200/80">
+            {activeTask.itemCount} items
           </span>
         </div>
         <div className="text-right">
