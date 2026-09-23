@@ -1,21 +1,11 @@
 import React, { useState } from 'react';
 import {
-  User,
-  ShieldCheck,
-  BatteryCharging,
-  Zap,
   Building,
-  FileCheck,
   Phone,
-  Mail,
   LogOut,
-  Award,
-  Layers,
-  Settings,
+  Mail,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { Button } from '../common/Button';
-import { Badge } from '../common/Badge';
 import { KycAssetSection } from './KycAssetSection';
 import { PerformanceScorecardSection } from './PerformanceScorecardSection';
 import { BatteryStatusCard } from '../../modules/battery-telemetry';
@@ -27,86 +17,79 @@ export const ProfileView: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>('performance');
 
   return (
-    <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200 pb-12">
+    <div className="space-y-4 animate-in fade-in duration-200 pb-12 max-w-md mx-auto">
       {/* Profile Header Hero Card */}
-      <div className="p-4 sm:p-5 bg-white rounded-2xl border border-neutral-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-4 bg-white rounded-3xl border border-neutral-200/80 shadow-xs space-y-3">
         <div className="flex items-center gap-3.5">
           <img
             src={partner.photoUrl}
             alt={partner.name}
-            className="w-16 h-16 rounded-2xl object-cover border border-neutral-200 shadow-xs shrink-0"
+            className="w-14 h-14 rounded-2xl object-cover border border-neutral-200 shadow-2xs shrink-0"
           />
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg sm:text-xl font-extrabold text-neutral-900 truncate">
-                {partner.name}
-              </h1>
-              <Badge variant="emerald" size="sm" dot>
-                VERIFIED
-              </Badge>
-            </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg font-black text-neutral-900 tracking-tight truncate">
+              {partner.name}
+            </h1>
             <p className="text-xs text-neutral-500 font-medium">
-              Partner Code: <span className="font-mono font-bold text-neutral-800">{partner.partnerCode}</span>
+              {partner.phone}
             </p>
-            <div className="flex items-center gap-3 mt-1 text-xs text-neutral-600">
-              <span>Rating: <strong className="text-neutral-900">★ {partner.rating}</strong></span>
-              <span>•</span>
-              <span>Trips: <strong className="text-neutral-900">{partner.completedDeliveriesCount}</strong></span>
-              <span>•</span>
-              <span className="font-bold text-[#009DE0]">{partner.tierLevel} TIER</span>
-            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-end sm:self-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={logout}
-            className="text-xs text-neutral-600 hover:text-rose-600 border-neutral-200"
-          >
-            <LogOut className="w-3.5 h-3.5 mr-1" />
-            Sign Out
-          </Button>
+        {/* 3 Clean Highlight Stats */}
+        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-neutral-100 text-center">
+          <div className="bg-neutral-50/80 rounded-2xl p-2 border border-neutral-200/60">
+            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">Rating</span>
+            <span className="text-sm font-black text-neutral-900 flex items-center justify-center gap-1">
+              <span className="text-amber-500">★</span> {partner.rating}
+            </span>
+          </div>
+          <div className="bg-neutral-50/80 rounded-2xl p-2 border border-neutral-200/60">
+            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">Trips</span>
+            <span className="text-sm font-black text-neutral-900">
+              {partner.completedDeliveriesCount}
+            </span>
+          </div>
+          <div className="bg-neutral-50/80 rounded-2xl p-2 border border-neutral-200/60">
+            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">Tier</span>
+            <span className="text-sm font-black text-[#009DE0]">
+              {partner.tierLevel}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Sub Tab Navigation */}
-      <div className="flex items-center gap-1.5 p-1 bg-neutral-200/60 rounded-xl overflow-x-auto">
+      {/* Segmented Tab Navigation */}
+      <div className="bg-white p-1 rounded-2xl border border-neutral-200/80 shadow-2xs grid grid-cols-3 gap-1 text-center text-xs font-bold">
         <button
           onClick={() => setActiveSubTab('performance')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+          className={`py-2 px-1 rounded-xl transition cursor-pointer ${
             activeSubTab === 'performance'
-              ? 'bg-white text-neutral-900 shadow-xs'
-              : 'text-neutral-600 hover:text-neutral-900'
+              ? 'bg-[#009DE0] text-white shadow-xs'
+              : 'text-neutral-500 hover:text-neutral-900'
           }`}
         >
-          <Award className="w-4 h-4 text-amber-500" />
-          <span>Scorecard & Tier Perks</span>
+          Performance
         </button>
-
         <button
           onClick={() => setActiveSubTab('kyc_assets')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+          className={`py-2 px-1 rounded-xl transition cursor-pointer ${
             activeSubTab === 'kyc_assets'
-              ? 'bg-white text-neutral-900 shadow-xs'
-              : 'text-neutral-600 hover:text-neutral-900'
+              ? 'bg-[#009DE0] text-white shadow-xs'
+              : 'text-neutral-500 hover:text-neutral-900'
           }`}
         >
-          <Layers className="w-4 h-4 text-emerald-600" />
-          <span>KYC, Assets & Vehicle Engine</span>
+          Documents
         </button>
-
         <button
           onClick={() => setActiveSubTab('account_telemetry')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+          className={`py-2 px-1 rounded-xl transition cursor-pointer ${
             activeSubTab === 'account_telemetry'
-              ? 'bg-white text-neutral-900 shadow-xs'
-              : 'text-neutral-600 hover:text-neutral-900'
+              ? 'bg-[#009DE0] text-white shadow-xs'
+              : 'text-neutral-500 hover:text-neutral-900'
           }`}
         >
-          <Settings className="w-4 h-4 text-neutral-600" />
-          <span>Bank & Device Telemetry</span>
+          Account
         </button>
       </div>
 
@@ -116,8 +99,8 @@ export const ProfileView: React.FC = () => {
       {activeSubTab === 'kyc_assets' && <KycAssetSection />}
 
       {activeSubTab === 'account_telemetry' && (
-        <div className="space-y-4">
-          {/* Live EV BMS & Bluetooth Telemetry Node - Only for EV vehicles */}
+        <div className="space-y-3">
+          {/* Live EV BMS Node - Only for EV vehicles */}
           {(partner.vehicleType === 'EV_SCOOTER' || partner.vehicleType === 'E_CARGO_3W') && (
             <BatteryStatusCard
               vehicleModel={partner.vehicleModel}
@@ -126,48 +109,67 @@ export const ProfileView: React.FC = () => {
           )}
 
           {/* Bank & Payout Details */}
-          <div className="p-4 bg-white rounded-2xl border border-neutral-200/80 shadow-xs space-y-3 text-xs">
-            <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider flex items-center gap-2">
-              <Building className="w-4 h-4 text-neutral-700" />
-              Direct Settlement Bank Account & UPI
-            </h3>
-            <div className="space-y-1.5 p-3 rounded-xl bg-neutral-50 border border-neutral-200/60">
-              <div className="flex justify-between py-0.5 border-b border-neutral-200/50">
-                <span className="text-neutral-500">Bank Name</span>
+          <div className="p-4 bg-white rounded-3xl border border-neutral-200/80 shadow-xs space-y-3 text-xs">
+            <div className="flex items-center gap-2 pb-1 border-b border-neutral-100">
+              <Building className="w-4 h-4 text-[#009DE0]" />
+              <h3 className="text-xs font-black text-neutral-900">
+                Settlement Bank Account
+              </h3>
+            </div>
+            <div className="space-y-2 p-3 rounded-2xl bg-neutral-50/80 border border-neutral-200/60">
+              <div className="flex justify-between py-0.5 border-b border-neutral-200/40">
+                <span className="text-neutral-500 font-medium">Bank</span>
                 <span className="font-bold text-neutral-900">{partner.bankAccount.bankName}</span>
               </div>
-              <div className="flex justify-between py-0.5 border-b border-neutral-200/50">
-                <span className="text-neutral-500">Account Number</span>
+              <div className="flex justify-between py-0.5 border-b border-neutral-200/40">
+                <span className="text-neutral-500 font-medium">Account Number</span>
                 <span className="font-mono font-bold text-neutral-900">{partner.bankAccount.accountNumber}</span>
               </div>
-              <div className="flex justify-between py-0.5 border-b border-neutral-200/50">
-                <span className="text-neutral-500">IFSC Code</span>
+              <div className="flex justify-between py-0.5 border-b border-neutral-200/40">
+                <span className="text-neutral-500 font-medium">IFSC</span>
                 <span className="font-mono font-bold text-neutral-900">{partner.bankAccount.ifscCode}</span>
               </div>
               <div className="flex justify-between py-0.5">
-                <span className="text-neutral-500">Registered Instant UPI VPA</span>
+                <span className="text-neutral-500 font-medium">UPI ID</span>
                 <span className="font-mono font-bold text-emerald-700">{partner.bankAccount.upiId}</span>
               </div>
             </div>
           </div>
 
-          {/* Contact & Dispatch Support */}
-          <div className="p-4 bg-white rounded-2xl border border-neutral-200/80 shadow-xs space-y-2 text-xs">
-            <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider flex items-center gap-2 mb-2">
-              <Phone className="w-4 h-4 text-neutral-700" />
-              Registered Contact Channels
-            </h3>
-            <div className="flex justify-between py-1 border-b border-neutral-100">
-              <span className="text-neutral-500">Primary Mobile</span>
-              <span className="font-bold text-neutral-900">{partner.phone}</span>
+          {/* Contact Details */}
+          <div className="p-4 bg-white rounded-3xl border border-neutral-200/80 shadow-xs space-y-2 text-xs">
+            <div className="flex items-center gap-2 pb-1 border-b border-neutral-100">
+              <Phone className="w-4 h-4 text-[#009DE0]" />
+              <h3 className="text-xs font-black text-neutral-900">
+                Contact Info
+              </h3>
             </div>
-            <div className="flex justify-between py-1">
-              <span className="text-neutral-500">Official Communication Email</span>
-              <span className="font-bold text-neutral-900">{partner.email}</span>
+            <div className="space-y-1.5 pt-1">
+              <div className="flex justify-between py-1 border-b border-neutral-100">
+                <span className="text-neutral-500 font-medium">Phone</span>
+                <span className="font-bold text-neutral-900">{partner.phone}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-neutral-500 font-medium">Email</span>
+                <span className="font-bold text-neutral-900 truncate max-w-[200px]">{partner.email}</span>
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Clean Sign Out Action */}
+      <div className="pt-2">
+        <button
+          type="button"
+          onClick={logout}
+          className="w-full py-3 px-4 rounded-2xl bg-white hover:bg-rose-50/60 border border-neutral-200/80 text-rose-600 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-2 shadow-2xs active:scale-[0.99]"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Sign Out</span>
+        </button>
+      </div>
     </div>
   );
 };
+
