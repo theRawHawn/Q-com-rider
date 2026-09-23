@@ -1,0 +1,6 @@
+{
+  "name": "Qcom Delivery partner",
+  "description": "Operational workspace for Qcom Delivery partner to manage active tasks, OpenStreetMap navigation, sealed package pickup verification with seller, and customer delivery with OTP verification.",
+  "requestFramePermissions": ["geolocation", "camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,38 @@
+# Development Task Tracking
+
+- [x] Initial Cross-Repository Codebase Analysis (Customer, Seller, Admin)
+- [x] Application Core Architecture & Document Setup (`product.md`, `design.md`, `architect.md`, `rules.md`, `tasks.md`, `memory.md`)
+- [x] Core TypeScript Domain Models & Interfaces (`src/types/delivery.ts`)
+- [x] Ecosystem Seed Data & Service Layer (`src/services/*`)
+  - [x] `authService.ts` (Authentication, duty status, partner profile)
+  - [x] `deliveryTaskService.ts` (Task broadcasting, pickup, multi-mode verification, return to hub)
+  - [x] `shiftBookingService.ts` (Gig capacity reservation, surge multiplier, attendance check-in)
+  - [x] `floatingCashService.ts` (COD collection, ₹2,500 ceiling enforcement, instant UPI deposit)
+  - [x] `safetyService.ts` (SOS emergency dispatch, automated IVR, 5-min unreachable countdown)
+  - [x] `kycAssetService.ts` (Aadhaar, DL, RC, insurance verification, vehicle payloads, training modules)
+  - [x] `performanceService.ts` (KPIs, Bronze/Silver/Gold/Platinum tiers, priority dispatch perks)
+  - [x] `earningsService.ts` (Base fare, distance, weight, surge, multi-pickup, instant bank payout)
+  - [x] `locationService.ts` (GPS simulation, route calculation, geofencing checks)
+  - [x] `notificationService.ts` (Transactional alerts, system notices)
+- [x] Context Providers (`AuthContext`, `TaskContext`, `ToastContext`)
+- [x] Reusable UI Components (Buttons, Modals, Status Badges, Bottom Sheets, Skeleton Loaders)
+- [x] Navigation & Responsive Layout Shell (Top Header, Mobile Bottom Nav, Desktop Sidebar, SOS Widget)
+- [x] Home Command Center View (Online/Offline Status, Shift Slot Booking, Available Broadcast Orders, Battery Telemetry)
+- [x] Gig Shift Booking & Capacity View (`ShiftBookingView.tsx` - Date selector, time slots, attendance check-in)
+- [x] Active Delivery Workflow View (`ActiveDeliveryWorkflow.tsx`):
+  - [x] Store pickup with store delay reporting and wait time compensation
+  - [x] Item manifest checklist with fragile/cold-chain indicators
+  - [x] Turn-by-turn interactive map with turn instructions
+  - [x] Multi-mode delivery verification: 4-digit PIN OTP, Contactless Photo Proof with GPS watermarks, and Cash on Delivery (COD) collection
+  - [x] Customer unreachable exception flow with 5-minute countdown and Seller Store return trip (+₹25)
+  - [x] Masked Telephony IVR call bridge modal (zero phone exposure)
+- [x] Earnings & Payout Ledger View (`EarningsView.tsx`, `FloatingCashCard.tsx`):
+  - [x] Floating Cash COD tracker with UPI remittance modal
+  - [x] Weekly milestone bonuses progress
+  - [x] Instant bank payout release request
+- [x] Trip History View (`DeliveryHistoryView.tsx` - Completed deliveries, route audits, payout receipts)
+- [x] Partner Profile & Verification View (`ProfileView.tsx`):
+  - [x] Overview tab with bank account, vehicle, and support links
+  - [x] Digital KYC & Asset Management tab (`KycAssetSection.tsx` - Document checks, vehicle payloads, training academy)
+  - [x] Performance & Tier Gamification tab (`PerformanceScorecardSection.tsx` - Rating, completion %, tiered perks)
+- [x] Full build & lint verification (`compile_applet` and `lint_applet` green)
