@@ -127,6 +127,12 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   };
 
+  /**
+   * BACKEND INTEGRATION NOTE:
+   * Handles COD completion without OTP.
+   * On backend integration, call POST /api/v1/delivery/tasks/:id/collect-cod.
+   * Floating cash and rider trip earnings are automatically updated.
+   */
   const recordCodDelivery = (amountCollected: number, proof?: ProofOfHandover): boolean => {
     if (!activeTask) return false;
     const task = activeTask;

@@ -328,7 +328,13 @@ class DeliveryTaskService {
   }
 
   /**
-   * Verifies Cash-on-Delivery payment handover
+   * Verifies Cash-on-Delivery payment handover (No OTP required)
+   * 
+   * BACKEND INTEGRATION NOTE:
+   * In quick commerce (Zepto/Blinkit/Swiggy/Amazon), cash payment collection serves as direct proof of handover.
+   * Target Backend Endpoint: POST /api/v1/delivery/tasks/:taskId/collect-cod
+   * Backend transitions order from 'out_for_delivery' -> 'delivered', updates payment status to 'PAID',
+   * and records floating cash balance in rider's settlement account.
    */
   public recordCodDelivery(amountCollected: number, proof?: ProofOfHandover): boolean {
     if (!this.activeTask) {

@@ -89,6 +89,7 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
   const isAtSeller = activeTask.orderStatus === 'packed';
   const isInTransitToCustomer = activeTask.orderStatus === 'out_for_delivery';
   const isAtCustomer = activeTask.orderStatus === 'arriving';
+  const isCodOrder = activeTask.paymentMethod === 'Pay on Delivery' || activeTask.paymentMethod === 'Pay on Jobsite' || activeTask.paymentStatus === 'PENDING';
 
   const hasDeliveryPhoto = Boolean(activeTask.deliveryProof?.photoUrl);
 
@@ -532,11 +533,18 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
               )}
             </div>
 
-            {/* Sub-step 2: Enter Customer 4-Digit OTP (Locked until photo is taken) */}
+            {/* 
+              BACKEND INTEGRATION SPECIFICATION:
+              - PREPAID orders: Handover is verified using 4-digit Customer Delivery OTP.
+              - COD orders: Handover is verified by Cash/UPI payment collection (No OTP needed).
+            */}
+            {/* Sub-step 2: Complete Verification (OTP for Prepaid, Direct Payment Collection for COD) */}
             <div
               className={`p-3.5 rounded-2xl border transition-all ${
                 hasDeliveryPhoto
-                  ? 'bg-[#EBF7FD]/40 border-[#009DE0]/40'
+                  ? isCodOrder
+                    ? 'bg-amber-50/40 border-amber-300/60'
+                    : 'bg-[#EBF7FD]/40 border-[#009DE0]/40'
                   : 'bg-neutral-50/70 border-neutral-200/80 opacity-80'
               }`}
             >
@@ -545,19 +553,23 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
                   <div
                     className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs ${
                       hasDeliveryPhoto
-                        ? 'bg-[#009DE0] text-white'
+                        ? isCodOrder
+                          ? 'bg-amber-600 text-white'
+                          : 'bg-[#009DE0] text-white'
                         : 'bg-neutral-300 text-neutral-600'
                     }`}
                   >
                     {hasDeliveryPhoto ? '2' : <Lock className="w-3.5 h-3.5" />}
                   </div>
                   <span className="text-xs font-black text-neutral-900">
-                    Enter Customer 4-Digit OTP
+                    {isCodOrder
+                      ? `Collect COD Payment (₹${activeTask.orderTotalAmount})`
+                      : 'Enter Customer 4-Digit OTP'}
                   </span>
                 </div>
                 {hasDeliveryPhoto ? (
-                  <Badge variant="brand" size="sm">
-                    Unlocked
+                  <Badge variant={isCodOrder ? 'amber' : 'brand'} size="sm">
+                    {isCodOrder ? 'Payment Due' : 'Unlocked'}
                   </Badge>
                 ) : (
                   <span className="text-[10px] font-semibold text-neutral-400">
@@ -568,29 +580,45 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
 
               <p className="text-[11px] text-neutral-500 mb-3">
                 {hasDeliveryPhoto
-                  ? "Ask customer for the 4-digit verification code shown on their app."
-                  : "Complete Step 1 (package photo) above to unlock OTP verification."}
+                  ? isCodOrder
+                    ? 'Collect cash or UPI payment from customer. Payment serves as delivery verification.'
+                    : 'Ask customer for the 4-digit verification code shown on their app.'
+                  : 'Complete Step 1 (package photo) above to unlock completion.'}
               </p>
 
               <Button
-                variant="brand"
+                variant={isCodOrder ? 'brand' : 'brand'}
                 size="md"
                 fullWidth
                 disabled={!hasDeliveryPhoto}
-                onClick={() => setIsOtpModalOpen(true)}
+                onClick={() => {
+                  if (isCodOrder) {
+                    setIsCodModalOpen(true);
+                  } else {
+                    setIsOtpModalOpen(true);
+                  }
+                }}
                 icon={
                   hasDeliveryPhoto ? (
-                    <KeyRound className="w-4 h-4 shrink-0" />
+                    isCodOrder ? (
+                      <Banknote className="w-4 h-4 shrink-0" />
+                    ) : (
+                      <KeyRound className="w-4 h-4 shrink-0" />
+                    )
                   ) : (
                     <Lock className="w-4 h-4 shrink-0" />
                   )
                 }
-                className="h-12 rounded-2xl font-black text-sm sm:text-base tracking-wide flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                className={`h-12 rounded-2xl font-black text-sm sm:text-base tracking-wide flex items-center justify-center gap-2 shadow-xs cursor-pointer ${
+                  isCodOrder && hasDeliveryPhoto ? 'bg-[#009DE0] hover:bg-[#0082BD] border-[#009DE0]' : ''
+                }`}
               >
                 <span className="truncate">
                   {hasDeliveryPhoto
-                    ? 'Enter Delivery OTP & Complete'
-                    : 'Take Photo First to Enter OTP'}
+                    ? isCodOrder
+                      ? `Collect ₹${activeTask.orderTotalAmount} Cash & Complete`
+                      : 'Enter Delivery OTP & Complete'
+                    : 'Take Photo First to Complete'}
                 </span>
               </Button>
             </div>
@@ -608,16 +636,29 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
                 </span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => setIsCodModalOpen(true)}
-                className="p-2.5 rounded-xl border border-neutral-200 hover:border-amber-500 bg-white text-center transition cursor-pointer"
-              >
-                <Banknote className="w-4 h-4 text-neutral-700 mx-auto mb-1" />
-                <span className="text-[11px] font-bold text-neutral-800 block truncate">
-                  Collect Cash
-                </span>
-              </button>
+              {!isCodOrder ? (
+                <button
+                  type="button"
+                  onClick={() => setIsCodModalOpen(true)}
+                  className="p-2.5 rounded-xl border border-neutral-200 hover:border-amber-500 bg-white text-center transition cursor-pointer"
+                >
+                  <Banknote className="w-4 h-4 text-neutral-700 mx-auto mb-1" />
+                  <span className="text-[11px] font-bold text-neutral-800 block truncate">
+                    Switch to COD
+                  </span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsOtpModalOpen(true)}
+                  className="p-2.5 rounded-xl border border-neutral-200 hover:border-[#009DE0] bg-white text-center transition cursor-pointer"
+                >
+                  <KeyRound className="w-4 h-4 text-neutral-700 mx-auto mb-1" />
+                  <span className="text-[11px] font-bold text-neutral-800 block truncate">
+                    Enter OTP
+                  </span>
+                </button>
+              )}
 
               <button
                 type="button"
