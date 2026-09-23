@@ -81,12 +81,7 @@ class DeliveryTaskService {
       orderStatus: newStatus,
     };
 
-    if (newStatus === 'out_for_delivery') {
-      updatedTask.pickedUpAt = now;
-      if (proof) {
-        updatedTask.pickupProof = proof;
-      }
-    } else if (newStatus === 'delivered') {
+    if (newStatus === 'delivered') {
       updatedTask.deliveredAt = now;
       if (proof) {
         updatedTask.deliveryProof = proof;
@@ -94,6 +89,12 @@ class DeliveryTaskService {
       this.completedTasksHistory.unshift(updatedTask);
       this.activeTask = null;
     } else {
+      if (newStatus === 'out_for_delivery') {
+        updatedTask.pickedUpAt = now;
+        if (proof) {
+          updatedTask.pickupProof = proof;
+        }
+      }
       this.activeTask = updatedTask;
     }
 

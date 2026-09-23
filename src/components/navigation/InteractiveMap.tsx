@@ -461,6 +461,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   // Simulation Animation Loop
   useEffect(() => {
+    if (currentMode === 'SELLER_TO_CUSTOMER') {
+      setProgressRatio(0);
+      setIsSimulating(true);
+    }
+  }, [currentMode]);
+
+  useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (isSimulating && currentMode !== 'VERIFICATION') {
       interval = setInterval(() => {

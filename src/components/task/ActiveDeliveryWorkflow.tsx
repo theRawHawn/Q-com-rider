@@ -271,7 +271,9 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
       </div>
 
       {/* Interactive Map (Selected from the 3 Map Modes) */}
-      <InteractiveMap task={activeTask} mode={activeMapMode} />
+      <div id="active-navigation-map" className="scroll-mt-4">
+        <InteractiveMap task={activeTask} mode={activeMapMode} />
+      </div>
 
       {/* Primary Action Card Based on Lifecycle Stage */}
       <div className="p-4 sm:p-5 rounded-2xl bg-white border border-neutral-200/80 shadow-xs space-y-4">
@@ -511,8 +513,17 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
               fullWidth
               disabled={!sellerTokenEntered || !sealIntact}
               onClick={() => {
-                showToast('Seller pickup verified! Order is now in transit.', 'success');
                 updateTaskStatus('out_for_delivery');
+                setSelectedMapMode('SELLER_TO_CUSTOMER');
+                showToast('Seller pickup verified! Starting ride to customer.', 'success');
+                setTimeout(() => {
+                  const mapEl = document.getElementById('active-navigation-map');
+                  if (mapEl) {
+                    mapEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }, 80);
               }}
               icon={<PackageCheck className="w-5 h-5" />}
               className="font-bold"
