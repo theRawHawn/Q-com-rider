@@ -26,8 +26,8 @@ export const Badge: React.FC<BadgeProps> = ({
   dot = false,
 }) => {
   const variantMap = {
-    brand: 'bg-orange-50 text-[#f25100] border-orange-200/80',
-    orange: 'bg-orange-50 text-orange-700 border-orange-200/80',
+    brand: 'bg-[#EBF7FD] text-[#009DE0] border-[#009DE0]/30',
+    orange: 'bg-[#EBF7FD] text-[#009DE0] border-[#009DE0]/30',
     emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200/80',
     indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200/80',
     amber: 'bg-amber-50 text-amber-800 border-amber-200/80',
@@ -37,8 +37,8 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const dotColorMap = {
-    brand: 'bg-[#f25100]',
-    orange: 'bg-orange-500',
+    brand: 'bg-[#009DE0]',
+    orange: 'bg-[#009DE0]',
     emerald: 'bg-emerald-500',
     indigo: 'bg-indigo-500',
     amber: 'bg-amber-500',

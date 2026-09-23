@@ -80,16 +80,16 @@ export const CodCollectionModal: React.FC<CodCollectionModalProps> = ({
               step="1"
               value={cashTendered}
               onChange={(e) => setCashTendered(e.target.value)}
-              className="w-full text-lg font-black text-neutral-900 px-3.5 py-2.5 rounded-xl border border-neutral-200 focus:outline-hidden focus:border-[#f25100]"
+              className="w-full text-lg font-black text-neutral-900 px-3.5 py-2.5 rounded-xl border border-neutral-200 focus:outline-hidden focus:border-[#009DE0] focus:ring-1 focus:ring-[#009DE0]"
               placeholder="Enter cash given"
               required
             />
           </div>
 
           {/* Change to Return Calculator */}
-          <div className="p-3 rounded-xl bg-orange-50/50 border border-orange-200/80 flex items-center justify-between text-xs">
+          <div className="p-3 rounded-xl bg-[#EBF7FD]/70 border border-[#009DE0]/30 flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
-              <Calculator className="w-4 h-4 text-[#f25100]" />
+              <Calculator className="w-4 h-4 text-[#009DE0]" />
               <span className="font-bold text-neutral-800">Change to Return:</span>
             </div>
             <span

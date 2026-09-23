@@ -51,31 +51,31 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-neutral-200/80 px-2 py-1.5 shadow-lg">
-      <div className="grid grid-cols-5 gap-1 max-w-md mx-auto">
+    <nav className="fixed bottom-3 left-1/2 -translate-x-1/2 w-[calc(100%-20px)] max-w-[420px] z-40 bg-white/95 backdrop-blur-xl border border-neutral-200/90 rounded-2xl px-2 py-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.1)]">
+      <div className="grid grid-cols-5 gap-1">
         {navItems.map((item) => {
           const isActive = activeTab === item.id;
           return (
             <button
               key={item.id}
               onClick={item.action}
-              className={`relative flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition-all duration-150 cursor-pointer ${
+              className={`relative flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all duration-150 cursor-pointer active:scale-95 ${
                 isActive
-                  ? 'text-[#f25100] font-extrabold'
-                  : 'text-neutral-500 hover:text-neutral-800 font-medium'
+                  ? 'text-[#009DE0] font-black'
+                  : 'text-neutral-500 hover:text-neutral-900 font-semibold'
               }`}
             >
               <div className="relative">
                 {item.icon}
                 {item.badge && (
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#f25100] ring-2 ring-white animate-pulse" />
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#009DE0] ring-2 ring-white animate-pulse" />
                 )}
               </div>
-              <span className="text-[10px] leading-tight mt-1 tracking-tight truncate max-w-full">
+              <span className="text-[10px] leading-tight mt-1 tracking-tight truncate max-w-full font-bold">
                 {item.label}
               </span>
               {isActive && (
-                <div className="w-4 h-0.5 bg-[#f25100] rounded-full mt-0.5" />
+                <div className="w-5 h-1 bg-[#009DE0] rounded-full mt-0.5" />
               )}
             </button>
           );

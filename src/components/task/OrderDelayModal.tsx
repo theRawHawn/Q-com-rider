@@ -70,7 +70,7 @@ export const OrderDelayModal: React.FC<OrderDelayModalProps> = ({
                 key={r.id}
                 className={`flex items-start gap-2.5 p-3 rounded-xl border text-xs font-medium cursor-pointer transition-all ${
                   selectedReason === r.id
-                    ? 'border-[#f25100] bg-orange-50/40 text-neutral-900 ring-1 ring-[#f25100]/20'
+                    ? 'border-[#009DE0] bg-[#EBF7FD] text-neutral-900 ring-1 ring-[#009DE0]/20'
                     : 'border-neutral-200 hover:bg-neutral-50 text-neutral-700'
                 }`}
               >
@@ -80,7 +80,7 @@ export const OrderDelayModal: React.FC<OrderDelayModalProps> = ({
                   value={r.id}
                   checked={selectedReason === r.id}
                   onChange={(e) => setSelectedReason(e.target.value)}
-                  className="mt-0.5 accent-[#f25100]"
+                  className="mt-0.5 accent-[#009DE0]"
                 />
                 <span>{r.label}</span>
               </label>

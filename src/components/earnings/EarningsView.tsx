@@ -32,7 +32,7 @@ interface BarDataPoint {
 export const EarningsView: React.FC = () => {
   const [summary, setSummary] = useState(() => earningsService.getSummary());
   const [ledger, setLedger] = useState(() => earningsService.getLedger());
-  const [selectedFilter, setSelectedFilter] = useState<PeriodFilter>('weekly');
+  const [selectedFilter, setSelectedFilter] = useState<PeriodFilter>('daily');
   const [periodOffset, setPeriodOffset] = useState<number>(0);
   const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
   const [isOrderEarningExpanded, setIsOrderEarningExpanded] = useState(true);
@@ -356,7 +356,7 @@ export const EarningsView: React.FC = () => {
 
   return (
     <div className="space-y-4 animate-in fade-in duration-150 pb-16 max-w-md md:max-w-2xl mx-auto">
-      {/* 1. Filter Tabs: Daily | Weekly | Monthly | Lifetime */}
+      {/* 1. Filter Tabs: Today | Weekly | Monthly | Lifetime */}
       <div className="bg-white p-1 rounded-2xl border border-neutral-200/80 shadow-2xs grid grid-cols-4 gap-1 text-center text-xs font-bold">
         {(['daily', 'weekly', 'monthly', 'lifetime'] as PeriodFilter[]).map((filter) => (
           <button
@@ -364,17 +364,17 @@ export const EarningsView: React.FC = () => {
             onClick={() => handleFilterChange(filter)}
             className={`py-2 rounded-xl capitalize transition-all cursor-pointer ${
               selectedFilter === filter
-                ? 'bg-neutral-900 text-white shadow-xs'
+                ? 'bg-[#009DE0] text-white shadow-xs font-black'
                 : 'text-neutral-600 hover:text-neutral-900'
             }`}
           >
-            {filter}
+            {filter === 'daily' ? 'Today' : filter}
           </button>
         ))}
       </div>
 
       {/* 2. Reference Card 1: Date Range & Big Earnings Header */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-neutral-200/80 shadow-2xs text-center space-y-2.5">
+      <div className="p-5 rounded-3xl bg-white border border-neutral-200/80 shadow-xs text-center space-y-3">
         {/* Date Selector Pill */}
         <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-neutral-100 text-neutral-700 text-xs font-semibold">
           <span>{periodData.dateRangePickerLabel}</span>
@@ -396,7 +396,7 @@ export const EarningsView: React.FC = () => {
             <ChevronLeft className="w-5 h-5" />
           </button>
 
-          <div className="text-3xl sm:text-4xl font-black text-neutral-900 tracking-tight">
+          <div className="text-3xl sm:text-4xl font-black text-neutral-900 tracking-tight tabular-nums">
             ₹{periodData.total.toLocaleString(undefined, { minimumFractionDigits: selectedFilter === 'weekly' ? 2 : 0, maximumFractionDigits: 2 })}
           </div>
 
@@ -420,16 +420,16 @@ export const EarningsView: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsPayoutModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 active:scale-98 text-white text-xs font-medium shadow-2xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#009DE0] hover:bg-[#0082BD] active:scale-98 text-white text-xs font-black shadow-xs transition-all cursor-pointer"
           >
-            <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+            <Zap className="w-3.5 h-3.5 text-white" />
             <span>Withdraw Payout</span>
           </button>
         </div>
       </div>
 
       {/* 3. Reference Card 2: Bar Chart & Dual Metric Box (Orders & Time on Order) */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-neutral-200/80 shadow-2xs space-y-4">
+      <div className="p-5 rounded-3xl bg-white border border-neutral-200/80 shadow-xs space-y-4">
         {/* Date Range Sub-Heading */}
         <h3 className="text-sm font-bold text-neutral-900">
           {periodData.dateRangeHeaderLabel}
@@ -444,7 +444,7 @@ export const EarningsView: React.FC = () => {
                 <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full group">
                   {/* Amount on top of bar */}
                   <span
-                    className={`text-[10px] font-bold mb-1 transition-opacity ${
+                    className={`text-[10px] font-bold mb-1 transition-opacity tabular-nums ${
                       bar.amount > 0 ? 'text-neutral-700 -rotate-30 sm:rotate-0 origin-bottom' : 'text-neutral-400'
                     }`}
                   >
@@ -452,10 +452,10 @@ export const EarningsView: React.FC = () => {
                   </span>
 
                   {/* Vertical Bar */}
-                  <div className="w-full max-w-[28px] bg-neutral-100 rounded-t-md flex items-end h-20">
+                  <div className="w-full max-w-[28px] bg-neutral-100 rounded-t-lg flex items-end h-20">
                     <div
-                      className={`w-full rounded-t-md transition-all duration-300 ${
-                        bar.amount > 0 ? 'bg-neutral-900' : 'bg-transparent'
+                      className={`w-full rounded-t-lg transition-all duration-300 ${
+                        bar.amount > 0 ? 'bg-gradient-to-t from-[#0082BD] to-[#009DE0]' : 'bg-transparent'
                       }`}
                       style={{ height: `${heightPercent}%` }}
                     />
@@ -557,7 +557,7 @@ export const EarningsView: React.FC = () => {
       <div className="bg-white rounded-2xl border border-neutral-200/80 p-4 sm:p-5 shadow-xs space-y-3">
         <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
           <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-[#f25100]" />
+            <Target className="w-4 h-4 text-[#009DE0]" />
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-neutral-900">
               Trip Milestone Targets
             </h3>
@@ -574,7 +574,7 @@ export const EarningsView: React.FC = () => {
           </div>
           <div className="w-full bg-neutral-100 rounded-full h-2.5 overflow-hidden">
             <div
-              className="bg-[#f25100] h-full rounded-full transition-all duration-300"
+              className="bg-[#009DE0] h-full rounded-full transition-all duration-300"
               style={{ width: `${Math.min(100, (summary.todayTripsCompleted / 12) * 100)}%` }}
             />
           </div>

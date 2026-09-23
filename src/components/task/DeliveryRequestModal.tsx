@@ -181,7 +181,7 @@ export const DeliveryRequestModal: React.FC<DeliveryRequestModalProps> = ({
           <button
             type="button"
             onClick={() => onStartOrder(task)}
-            className="w-full py-3.5 px-6 rounded-2xl bg-[#f25100] hover:bg-[#d94800] text-white font-black text-base shadow-md active:scale-[0.99] transition cursor-pointer flex items-center justify-center gap-2 tracking-wide"
+            className="w-full py-3.5 px-6 rounded-2xl bg-[#009DE0] hover:bg-[#0082BD] active:bg-[#0074A8] text-white font-black text-base shadow-md active:scale-[0.99] transition cursor-pointer flex items-center justify-center gap-2 tracking-wide"
           >
             <span>Start order</span>
             <ArrowRight className="w-4 h-4 text-white/90" />

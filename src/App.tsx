@@ -23,9 +23,9 @@ const MainAppContent: React.FC = () => {
   const [isLocationOpen, setIsLocationOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-neutral-900 flex justify-center antialiased">
+    <div className="min-h-screen bg-neutral-900 flex justify-center antialiased selection:bg-[#009DE0] selection:text-white">
       {/* Mobile-Only App Shell */}
-      <div className="w-full max-w-md min-h-screen bg-neutral-50 text-neutral-900 font-sans flex flex-col relative shadow-2xl overflow-x-hidden">
+      <div className="w-full max-w-md min-h-screen bg-[#F7F9FA] text-[#141414] font-sans flex flex-col relative shadow-2xl overflow-x-hidden">
         {/* Sticky Top Header */}
         <TopHeader
           onOpenSupport={() => setIsSupportOpen(true)}

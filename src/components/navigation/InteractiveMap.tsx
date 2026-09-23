@@ -72,17 +72,17 @@ export const createRiderIcon = () => {
     html: `
       <div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; position: relative;">
         <!-- Soft Pulse Glow -->
-        <div style="position: absolute; inset: -3px; border-radius: 9999px; background: rgba(37, 99, 235, 0.25); animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+        <div style="position: absolute; inset: -3px; border-radius: 9999px; background: rgba(0, 157, 224, 0.25); animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
         <!-- White Border Disc with Scooter & Delivery Box -->
-        <div style="width: 36px; height: 36px; background: #ffffff; border-radius: 9999px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,0.24); border: 2.5px solid #2563eb; position: relative; z-index: 10;">
+        <div style="width: 36px; height: 36px; background: #ffffff; border-radius: 9999px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,0.24); border: 2.5px solid #009DE0; position: relative; z-index: 10;">
           <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="15" cy="9" r="3.2" fill="#1e293b"/>
             <path d="M12 13.5C12 13.5 14.5 12 16.5 12C18.5 12 21 13.5 21 13.5L19.5 17H13.5L12 13.5Z" fill="#334155"/>
-            <path d="M9.5 15.5H23.5" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+            <path d="M9.5 15.5H23.5" stroke="#009DE0" stroke-width="2" stroke-linecap="round"/>
             <circle cx="9.5" cy="22.5" r="3" fill="#0f172a" stroke="#ffffff" stroke-width="1.2"/>
             <circle cx="23.5" cy="22.5" r="3" fill="#0f172a" stroke="#ffffff" stroke-width="1.2"/>
-            <path d="M10.5 22.5H22.5L20 16H13.5L10.5 22.5Z" fill="#2563eb"/>
-            <rect x="18" y="10" width="8" height="8" rx="1.5" fill="#dc2626" stroke="#ffffff" stroke-width="1.2"/>
+            <path d="M10.5 22.5H22.5L20 16H13.5L10.5 22.5Z" fill="#009DE0"/>
+            <rect x="18" y="10" width="8" height="8" rx="1.5" fill="#009DE0" stroke="#ffffff" stroke-width="1.2"/>
             <path d="M22 12V16" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
             <path d="M20 14H24" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/>
           </svg>

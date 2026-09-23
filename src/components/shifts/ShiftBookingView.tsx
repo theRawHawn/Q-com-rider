@@ -73,11 +73,11 @@ export const ShiftBookingView: React.FC = () => {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Top Banner: Tier Priority & Booking Capacity */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-neutral-200/80 text-neutral-900 shadow-2xs relative overflow-hidden">
+      <div className="p-5 rounded-3xl bg-white border border-neutral-200/80 text-neutral-900 shadow-xs relative overflow-hidden">
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <Badge variant="orange" size="sm">
+              <Badge variant="brand" size="sm">
                 {partner.tierLevel} TIER PRIVILEGE
               </Badge>
               <span className="text-xs text-neutral-500 font-semibold">
@@ -92,7 +92,7 @@ export const ShiftBookingView: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center gap-2.5 bg-neutral-50 px-3.5 py-2 rounded-xl self-start sm:self-auto border border-neutral-200">
-            <Calendar className="w-4 h-4 text-emerald-600" />
+            <Calendar className="w-4 h-4 text-[#009DE0]" />
             <div className="text-xs">
               <span className="text-neutral-500 font-medium block">Today's Bookings</span>
               <span className="font-extrabold text-neutral-900">{bookedCountTotal} Slots Confirmed</span>
@@ -102,7 +102,7 @@ export const ShiftBookingView: React.FC = () => {
       </div>
 
       {/* 7-Day Horizon Date Selector */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-neutral-200/80 shadow-xs">
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-neutral-200/80 shadow-xs">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-neutral-500" />
@@ -122,7 +122,7 @@ export const ShiftBookingView: React.FC = () => {
                 onClick={() => setSelectedDate(d.dateStr)}
                 className={`flex flex-col items-center py-2 px-1.5 sm:py-2.5 sm:px-2 rounded-xl border text-center transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-[#f25100] border-[#f25100] text-white shadow-xs scale-[1.02]'
+                    ? 'bg-[#009DE0] border-[#009DE0] text-white shadow-xs scale-[1.02]'
                     : 'bg-neutral-50 hover:bg-neutral-100 border-neutral-200/80 text-neutral-700'
                 }`}
               >
@@ -153,7 +153,7 @@ export const ShiftBookingView: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
         {/* Hub Selector */}
         <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-neutral-200/80 shadow-xs flex-1">
-          <MapPin className="w-4 h-4 text-[#f25100] shrink-0" />
+          <MapPin className="w-4 h-4 text-[#009DE0] shrink-0" />
           <select
             value={selectedHub}
             onChange={(e) => setSelectedHub(e.target.value)}

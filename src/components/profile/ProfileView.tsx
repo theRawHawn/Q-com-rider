@@ -53,7 +53,7 @@ export const ProfileView: React.FC = () => {
               <span>•</span>
               <span>Trips: <strong className="text-neutral-900">{partner.completedDeliveriesCount}</strong></span>
               <span>•</span>
-              <span className="font-bold text-[#f25100]">{partner.tierLevel} TIER</span>
+              <span className="font-bold text-[#009DE0]">{partner.tierLevel} TIER</span>
             </div>
           </div>
         </div>

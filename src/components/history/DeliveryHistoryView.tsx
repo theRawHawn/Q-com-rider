@@ -132,8 +132,8 @@ export const DeliveryHistoryView: React.FC = () => {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 bg-neutral-100 rounded-xl text-neutral-700">
-                    <Calendar className="w-4 h-4 text-[#f25100]" />
+                  <div className="p-2 bg-[#EBF7FD] rounded-xl text-neutral-700">
+                    <Calendar className="w-4 h-4 text-[#009DE0]" />
                   </div>
                   <div>
                     <p className="text-xs font-bold text-neutral-900">{shift.dateLabel}</p>
@@ -189,57 +189,57 @@ export const DeliveryHistoryView: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by order number or store..."
-              className="w-full pl-9 pr-3 py-2 bg-white border border-neutral-200/80 rounded-xl text-xs text-neutral-900 focus:outline-none focus:border-neutral-400 shadow-2xs"
+              className="w-full pl-9 pr-3 py-2.5 bg-white border border-neutral-200/80 rounded-2xl text-xs text-neutral-900 focus:outline-none focus:border-[#009DE0] shadow-2xs"
             />
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {filteredTrips.length > 0 ? (
               filteredTrips.map((task) => (
                 <div
                   key={task.id}
                   onClick={() => setSelectedTask(task)}
-                  className="p-4 bg-white rounded-2xl border border-neutral-200/80 shadow-2xs hover:border-neutral-300 transition-all cursor-pointer space-y-2"
+                  className="p-4 sm:p-5 bg-white rounded-3xl border border-neutral-200/80 shadow-xs hover:border-[#009DE0]/40 transition-all cursor-pointer space-y-2.5"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-neutral-900 text-sm">{task.orderNumber}</span>
+                      <span className="font-black text-neutral-900 text-sm">{task.orderNumber}</span>
                       <Badge variant="emerald" size="sm">
                         DELIVERED
                       </Badge>
                     </div>
-                    <span className="text-sm font-black text-emerald-700">
+                    <span className="text-sm font-black text-[#009DE0] tabular-nums">
                       +₹{task.payoutBreakdown.totalPayout}
                     </span>
                   </div>
 
                   <div className="text-xs space-y-1 text-neutral-600">
                     <p>
-                      <strong>Pickup:</strong> {task.pickup.storeName}
+                      <strong className="text-neutral-800">Pickup:</strong> {task.pickup.storeName}
                     </p>
                     <p className="text-neutral-500 truncate">
-                      <strong>Drop:</strong> {task.drop.customerName} ({task.drop.address})
+                      <strong className="text-neutral-800">Drop:</strong> {task.drop.customerName} ({task.drop.address})
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-2 border-t border-neutral-100">
+                  <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-2.5 border-t border-neutral-100">
                     <div className="flex items-center gap-2">
                       <span>{task.deliveredAt ? new Date(task.deliveredAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : 'Recently'}</span>
                       {(task.pickupProof || task.deliveryProof) && (
-                        <span className="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-800 font-bold px-1.5 py-0.5 rounded border border-emerald-200">
+                        <span className="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-200">
                           <ShieldCheck className="w-3 h-3 text-emerald-600" />
                           Vault Proofs
                         </span>
                       )}
                     </div>
-                    <span className="text-neutral-700 font-semibold flex items-center gap-1">
-                      View Audit <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+                    <span className="text-[#009DE0] font-bold flex items-center gap-1">
+                      View Audit <ChevronRight className="w-3.5 h-3.5 text-[#009DE0]" />
                     </span>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="p-8 text-center bg-white rounded-2xl border border-neutral-200/80 my-4 text-xs text-neutral-500">
+              <div className="p-8 text-center bg-white rounded-3xl border border-neutral-200/80 my-4 text-xs text-neutral-500">
                 <History className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
                 No completed trip records matching "{searchQuery}".
               </div>

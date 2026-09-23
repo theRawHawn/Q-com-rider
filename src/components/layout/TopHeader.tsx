@@ -32,7 +32,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   return (
     <header
       onClick={handleScrollToTop}
-      className="sticky top-0 z-40 bg-[#3e4452] text-white px-3.5 sm:px-6 py-2 shadow-xs cursor-pointer select-none"
+      className="sticky top-0 z-40 bg-gradient-to-r from-[#007eb8] via-[#009DE0] to-[#00B2EE] text-white px-3.5 sm:px-6 py-2.5 shadow-md cursor-pointer select-none border-b border-sky-400/30"
       title="Tap to scroll back to top"
     >
       <div
@@ -45,8 +45,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           onClick={() => toggleOnlineDuty(!partner.isOnline)}
           className={`relative w-[76px] h-[26px] rounded-full transition-colors duration-300 cursor-pointer border shadow-inner flex items-center select-none overflow-hidden shrink-0 ${
             partner.isOnline
-              ? 'bg-emerald-600 border-emerald-500 text-white'
-              : 'bg-slate-600/90 border-slate-500/70 text-slate-200 hover:bg-slate-600'
+              ? 'bg-white/25 border-white/50 text-white backdrop-blur-xs'
+              : 'bg-black/30 border-black/20 text-white/70 hover:bg-black/40'
           }`}
           title={partner.isOnline ? 'Switch to Offline' : 'Switch to Online'}
           aria-label="Toggle Online/Offline Duty"
@@ -59,17 +59,17 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           >
             <span
               className={`w-2 h-2 rounded-full transition-colors duration-200 ${
-                partner.isOnline ? 'bg-emerald-600 animate-pulse' : 'bg-slate-400'
+                partner.isOnline ? 'bg-[#009DE0] animate-pulse' : 'bg-neutral-400'
               }`}
             />
           </span>
 
           {/* Text Labels positioned on either side */}
           <span
-            className={`absolute inset-0 flex items-center text-[10px] font-extrabold uppercase tracking-tight transition-opacity duration-200 ${
+            className={`absolute inset-0 flex items-center text-[10px] font-black uppercase tracking-tight transition-opacity duration-200 ${
               partner.isOnline
-                ? 'justify-start pl-2 text-white'
-                : 'justify-end pr-2 text-slate-200'
+                ? 'justify-start pl-2.5 text-white font-extrabold'
+                : 'justify-end pr-2.5 text-white/80'
             }`}
           >
             {partner.isOnline ? 'On' : 'Off'}

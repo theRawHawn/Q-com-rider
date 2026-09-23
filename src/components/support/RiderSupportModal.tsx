@@ -73,7 +73,7 @@ export const RiderSupportModal: React.FC<RiderSupportModalProps> = ({
                   key={item}
                   className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs font-semibold cursor-pointer transition ${
                     issueType === item
-                      ? 'bg-orange-50/70 text-neutral-900 border-[#f25100] ring-1 ring-[#f25100]/20'
+                      ? 'bg-[#EBF7FD] text-neutral-900 border-[#009DE0] ring-1 ring-[#009DE0]/20'
                       : 'bg-neutral-50 text-neutral-700 border-neutral-200/80 hover:bg-neutral-100'
                   }`}
                 >
@@ -87,7 +87,7 @@ export const RiderSupportModal: React.FC<RiderSupportModalProps> = ({
                   />
                   <HelpCircle
                     className={`w-4 h-4 shrink-0 ${
-                      issueType === item ? 'text-[#f25100]' : 'text-neutral-400'
+                      issueType === item ? 'text-[#009DE0]' : 'text-neutral-400'
                     }`}
                   />
                   <span className="truncate">{item}</span>

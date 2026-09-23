@@ -210,14 +210,14 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
             onClick={() => setSelectedMapMode('RIDER_TO_SELLER')}
             className={`p-2 rounded-xl text-left transition cursor-pointer ${
               activeMapMode === 'RIDER_TO_SELLER'
-                ? 'bg-blue-50/90 border-2 border-blue-500 ring-2 ring-blue-100'
+                ? 'bg-[#EBF7FD] border-2 border-[#009DE0] ring-2 ring-[#009DE0]/20'
                 : 'hover:bg-neutral-50 border border-neutral-200/80'
             }`}
           >
             <div
               className={`h-1.5 rounded-full mb-1.5 ${
                 isAtPickupStage || isInTransitStage || isArrivedDropStage
-                  ? 'bg-blue-600'
+                  ? 'bg-[#009DE0]'
                   : 'bg-neutral-200'
               }`}
             />
@@ -232,14 +232,14 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
             onClick={() => setSelectedMapMode('SELLER_TO_CUSTOMER')}
             className={`p-2 rounded-xl text-left transition cursor-pointer ${
               activeMapMode === 'SELLER_TO_CUSTOMER'
-                ? 'bg-blue-50/90 border-2 border-blue-500 ring-2 ring-blue-100'
+                ? 'bg-[#EBF7FD] border-2 border-[#009DE0] ring-2 ring-[#009DE0]/20'
                 : 'hover:bg-neutral-50 border border-neutral-200/80'
             }`}
           >
             <div
               className={`h-1.5 rounded-full mb-1.5 ${
                 isInTransitStage || isArrivedDropStage
-                  ? 'bg-blue-600'
+                  ? 'bg-[#009DE0]'
                   : 'bg-neutral-200'
               }`}
             />

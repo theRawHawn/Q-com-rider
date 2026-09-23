@@ -95,7 +95,7 @@ export const PerformanceScorecardSection: React.FC = () => {
         <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-neutral-200/80 shadow-xs">
           <div className="flex items-center justify-between text-neutral-500 mb-1.5">
             <span className="text-[11px] font-bold uppercase tracking-wider">On-Time SLA</span>
-            <Clock className="w-4 h-4 text-[#f25100]" />
+            <Clock className="w-4 h-4 text-[#009DE0]" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-neutral-900">
             {scorecard.onTimeDeliveryRatePercent}%
@@ -171,20 +171,20 @@ export const PerformanceScorecardSection: React.FC = () => {
                 key={t}
                 className={`p-3 rounded-xl border text-left transition-all ${
                   isCurrent
-                    ? 'border-orange-500 bg-orange-50/60 text-neutral-900 shadow-2xs ring-1 ring-orange-500/20'
+                    ? 'border-[#009DE0] bg-[#EBF7FD] text-neutral-900 shadow-2xs ring-1 ring-[#009DE0]/20'
                     : 'border-neutral-200/80 bg-neutral-50/50 hover:bg-neutral-100/60 text-neutral-800'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <span
                     className={`text-xs font-black uppercase tracking-wider ${
-                      isCurrent ? 'text-[#f25100]' : 'text-neutral-800'
+                      isCurrent ? 'text-[#009DE0]' : 'text-neutral-800'
                     }`}
                   >
                     {t}
                   </span>
                   {isCurrent && (
-                    <span className="text-[9px] font-bold bg-[#f25100] text-white px-1.5 py-0.5 rounded-sm">
+                    <span className="text-[9px] font-bold bg-[#009DE0] text-white px-1.5 py-0.5 rounded-sm">
                       Current
                     </span>
                   )}

@@ -106,7 +106,7 @@ export const KycAssetSection: React.FC = () => {
       <div className="bg-white rounded-2xl border border-neutral-200/80 p-4 sm:p-5 shadow-xs space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
           <div className="flex items-center gap-2">
-            <Truck className="w-5 h-5 text-[#f25100]" />
+            <Truck className="w-5 h-5 text-[#009DE0]" />
             <div>
               <h3 className="text-sm font-extrabold text-neutral-900">
                 Vehicle Profile & Operating Constraint Matrix
@@ -119,29 +119,29 @@ export const KycAssetSection: React.FC = () => {
         </div>
 
         {/* Current Active Vehicle Info */}
-        <div className="p-3.5 rounded-xl bg-orange-50/40 border border-orange-200/60">
+        <div className="p-3.5 rounded-xl bg-[#EBF7FD]/60 border border-[#009DE0]/20">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-extrabold text-neutral-900">
               Active Configuration: {activeConstraint.label}
             </span>
-            <Badge variant="orange" size="sm">
+            <Badge variant="brand" size="sm">
               Active
             </Badge>
           </div>
           <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className="bg-white p-2 rounded-lg border border-orange-100">
+            <div className="bg-white p-2 rounded-lg border border-[#009DE0]/15">
               <span className="text-[10px] text-neutral-500 block">Operating Radius</span>
               <span className="font-extrabold text-neutral-900">
                 &le; {activeConstraint.maxRadiusKm} km
               </span>
             </div>
-            <div className="bg-white p-2 rounded-lg border border-orange-100">
+            <div className="bg-white p-2 rounded-lg border border-[#009DE0]/15">
               <span className="text-[10px] text-neutral-500 block">Payload Limit</span>
               <span className="font-extrabold text-neutral-900">
                 &le; {activeConstraint.maxWeightKg} kg
               </span>
             </div>
-            <div className="bg-white p-2 rounded-lg border border-orange-100">
+            <div className="bg-white p-2 rounded-lg border border-[#009DE0]/15">
               <span className="text-[10px] text-neutral-500 block">EV Telemetry</span>
               <span className="font-extrabold text-emerald-700">
                 {activeConstraint.batteryRequired ? 'Required' : 'Exempt'}
@@ -164,7 +164,7 @@ export const KycAssetSection: React.FC = () => {
                   onClick={() => handleSwitchVehicle(c.vehicleType)}
                   className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                     isSelected
-                      ? 'border-[#f25100] bg-orange-50/30 ring-1 ring-[#f25100]/20'
+                      ? 'border-[#009DE0] bg-[#EBF7FD]/50 ring-1 ring-[#009DE0]/20'
                       : 'border-neutral-200/70 hover:border-neutral-300 bg-white'
                   }`}
                 >
