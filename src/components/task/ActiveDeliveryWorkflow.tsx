@@ -119,9 +119,6 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
           <span className="font-mono text-sm font-black text-neutral-900">
             {activeTask.orderNumber}
           </span>
-          <span className="text-xs font-bold text-neutral-600 bg-neutral-100 px-2 py-0.5 rounded-full border border-neutral-200/80">
-            {activeTask.itemCount} items
-          </span>
         </div>
         <div className="text-right">
           <span className="text-[11px] font-semibold text-neutral-500">
