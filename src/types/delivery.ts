@@ -161,10 +161,11 @@ export interface ProofOfHandover {
   capturedByPartnerId: string;
   orderNumber: string;
   tamperSealStatus: 'INTACT_VERIFIED' | 'TAMPERED' | 'NOT_APPLICABLE';
-  securityHash: string; // Anti-tampering digital cryptographic watermark
-  retentionUntil: string; // ISO date string when return window closes
-  retentionDaysRemaining: number;
+  securityHash?: string; // Anti-tampering digital cryptographic watermark
+  retentionUntil?: string; // ISO date string when return window closes
+  retentionDaysRemaining?: number;
   note?: string;
+  customerOtpVerified?: boolean;
 }
 
 export interface DeliveryTask {
@@ -173,6 +174,9 @@ export interface DeliveryTask {
   orderNumber: string;
   orderStatus: OrderStatus;
   placedAt: string;
+  isOtpVerified?: boolean;
+  isCodPaid?: boolean;
+  proofOfHandover?: ProofOfHandover;
   packedAt?: string;
   estimatedDeliveryAt: string;
   items: OrderItem[];
@@ -256,6 +260,8 @@ export interface TelemetryPing {
   speedKmH: number;
   headingDegrees: number;
   timestamp: string;
+  isMockGps?: boolean;
+  clientTime?: number;
 }
 
 // ----------------------------------------------------

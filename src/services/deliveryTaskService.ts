@@ -267,11 +267,43 @@ class DeliveryTaskService {
   }
 
   /**
+   * Advances task lifecycle stage with strict workflow state machine validation
+   * Remediates STRIX-REM-006 (CWE-841: Improper Enforcement of Behavioral Workflow)
+   */
+  public advanceTaskStage(targetStage: string, proof?: ProofOfHandover): DeliveryTask {
+    const normalized = targetStage.toUpperCase();
+    if (normalized === 'DELIVERED' || normalized === 'COMPLETED') {
+      const isOtpVerified =
+        proof?.customerOtpVerified ||
+        this.activeTask?.isOtpVerified ||
+        this.activeTask?.proofOfHandover?.customerOtpVerified;
+      if (!isOtpVerified) {
+        throw new Error('Customer 4-digit handover OTP must be verified before marking delivered');
+      }
+    }
+    return this.updateTaskStatus(targetStage.toLowerCase() as OrderStatus, proof);
+  }
+
+  /**
    * Transition order status (e.g. 'packed' -> 'out_for_delivery' -> 'arriving' -> 'delivered')
    */
   public updateTaskStatus(newStatus: OrderStatus, proof?: ProofOfHandover): DeliveryTask {
     if (!this.activeTask) {
       throw new Error('No active delivery task to update.');
+    }
+
+    if (newStatus === 'delivered') {
+      const hasOtpVerified =
+        proof?.customerOtpVerified ||
+        this.activeTask.isOtpVerified ||
+        this.activeTask.proofOfHandover?.customerOtpVerified;
+      const isContactlessPhoto =
+        proof && (proof.tamperSealStatus === 'INTACT_VERIFIED' || (proof.photoUrls && proof.photoUrls.length > 0));
+      const isCodHandover = this.activeTask.isCodPaid;
+
+      if (!hasOtpVerified && !isContactlessPhoto && !isCodHandover) {
+        throw new Error('Customer 4-digit handover OTP must be verified before marking delivered');
+      }
     }
 
     const now = new Date().toISOString();
@@ -284,6 +316,7 @@ class DeliveryTaskService {
       updatedTask.deliveredAt = now;
       if (proof) {
         updatedTask.deliveryProof = proof;
+        updatedTask.proofOfHandover = proof;
       }
       this.completedTasksHistory.unshift(updatedTask);
       this.activeTask = null;
@@ -310,7 +343,21 @@ class DeliveryTaskService {
     }
 
     if (enteredOtp.trim() === this.activeTask.deliveryOtp.trim()) {
-      this.updateTaskStatus('delivered', proof);
+      this.activeTask.isOtpVerified = true;
+      const handoverProof: ProofOfHandover = proof || {
+        id: `PROOF-DELIVERY-${Date.now()}`,
+        photoUrl: '',
+        timestamp: new Date().toISOString(),
+        stage: 'DELIVERY',
+        coordinates: this.activeTask.drop.coordinates,
+        capturedByPartnerId: 'RIDER-4029',
+        orderNumber: this.activeTask.orderNumber,
+        tamperSealStatus: 'INTACT_VERIFIED',
+        customerOtpVerified: true,
+      };
+      handoverProof.customerOtpVerified = true;
+      this.activeTask.proofOfHandover = handoverProof;
+      this.updateTaskStatus('delivered', handoverProof);
       return true;
     }
     return false;

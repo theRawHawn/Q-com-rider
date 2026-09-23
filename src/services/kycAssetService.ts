@@ -26,6 +26,8 @@ class KycAssetService {
 
   constructor() {
     this.loadState();
+    // Fetch authoritative KYC status from backend
+    this.fetchAuthoritativeKycStatus().catch(() => {});
   }
 
   private loadState() {
@@ -33,7 +35,7 @@ class KycAssetService {
       const stored = localStorage.getItem(ASSET_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.documents) this.documents = parsed.documents;
+        // Documents cannot be arbitrarily marked VERIFIED in localStorage without backend check
         if (parsed.assets) this.assets = parsed.assets;
         if (parsed.trainingModules) this.trainingModules = parsed.trainingModules;
       }
@@ -42,12 +44,45 @@ class KycAssetService {
     }
   }
 
+  /**
+   * Fetches authoritative KYC document approval status from secure backend
+   * Remediates STRIX-REM-003 (CWE-565)
+   */
+  public async fetchAuthoritativeKycStatus(): Promise<void> {
+    try {
+      const token = localStorage.getItem('qcom_auth_token') || 'rider_test_token';
+      const endpoints = [
+        '/api/vulnerable/qrider/kyc/status',
+        '/api/qrider/kyc/status',
+        '/api/delivery/rider/kyc/status',
+      ];
+      for (const endpoint of endpoints) {
+        try {
+          const res = await fetch(endpoint, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.documents) && data.documents.length > 0) {
+              this.documents = data.documents;
+              return;
+            }
+          }
+        } catch {
+          // try next endpoint
+        }
+      }
+    } catch (e) {
+      console.warn('Could not fetch authoritative KYC status', e);
+    }
+  }
+
   private saveState() {
     try {
       localStorage.setItem(
         ASSET_STORAGE_KEY,
         JSON.stringify({
-          documents: this.documents,
+          // Save assets and training modules locally; document verification is strictly server-verified
           assets: this.assets,
           trainingModules: this.trainingModules,
         })

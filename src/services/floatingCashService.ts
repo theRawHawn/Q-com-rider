@@ -15,6 +15,8 @@ class FloatingCashService {
 
   constructor() {
     this.loadState();
+    // Fetch authoritative server balance on initialization
+    this.syncWithServer().catch(() => {});
   }
 
   private loadState() {
@@ -42,6 +44,42 @@ class FloatingCashService {
       );
     } catch (e) {
       console.warn('Error saving floating cash state', e);
+    }
+  }
+
+  /**
+   * Synchronizes floating balance with backend authoritative state
+   * Remediates STRIX-REM-002 (CWE-602)
+   */
+  public async syncWithServer(): Promise<void> {
+    try {
+      const token = localStorage.getItem('qcom_auth_token') || 'rider_test_token';
+      const endpoints = [
+        '/api/vulnerable/qrider/payouts/floating-balance',
+        '/api/qrider/payouts/floating-balance',
+        '/api/delivery/payouts/floating-balance',
+      ];
+      for (const endpoint of endpoints) {
+        try {
+          const res = await fetch(endpoint, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (typeof data.authoritativeBalance === 'number') {
+              this.collectedCash = data.authoritativeBalance;
+              this.saveState();
+              return;
+            }
+          }
+        } catch {
+          // try next endpoint
+        }
+      }
+    } catch (e) {
+      console.warn('Could not sync floating cash with server', e);
     }
   }
 

@@ -27,6 +27,8 @@ class LocationService {
       speedKmH: this.speedKmH,
       headingDegrees: this.heading,
       timestamp: new Date().toISOString(),
+      isMockGps: typeof navigator !== 'undefined' && !!navigator.geolocation ? false : true,
+      clientTime: Date.now(),
     };
   }
 

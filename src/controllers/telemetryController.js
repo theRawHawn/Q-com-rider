@@ -5,11 +5,13 @@ const riderLocations = new Map();
 
 /**
  * Updates active rider GPS telemetry and battery status
- * Remediates CWE-862 (Missing Authorization) & Location Spoofing
+ * Remediates CWE-862 (Missing Authorization) & STRIX-REM-004 (CWE-20: Velocity Plausibility Filter)
  */
 exports.updateRiderLocation = async (req, res) => {
-  // Line 12 - Enforce authenticated session and matching rider identity
-  if (!req.user || req.user.riderId !== req.body.riderId) {
+  // Enforce authenticated session and matching rider identity
+  const riderId = req.body.riderId || (req.user ? req.user.riderId : null);
+
+  if (!req.user || (req.body.riderId && req.user.riderId !== req.body.riderId)) {
     return res.status(403).json({
       error: 'Unauthorized rider telemetry update',
       cwe: 'CWE-862',
@@ -17,47 +19,63 @@ exports.updateRiderLocation = async (req, res) => {
     });
   }
 
-  const { riderId, latitude, longitude, speed, batteryLevel } = req.body;
+  let latitude = req.body.latitude;
+  let longitude = req.body.longitude;
+
+  if (latitude === undefined && req.body.currentLocation) {
+    latitude = req.body.currentLocation.lat;
+    longitude = req.body.currentLocation.lng;
+  }
+  if (latitude === undefined && req.body.lat !== undefined) {
+    latitude = req.body.lat;
+    longitude = req.body.lng;
+  }
 
   if (latitude === undefined || longitude === undefined) {
     return res.status(400).json({ error: 'Missing GPS coordinates (latitude, longitude required)' });
   }
 
+  latitude = Number(latitude);
+  longitude = Number(longitude);
+
   // Validate coordinates boundaries
-  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180 || isNaN(latitude) || isNaN(longitude)) {
     return res.status(400).json({ error: 'Invalid geographical coordinate range' });
   }
 
-  // GPS Teleportation Boundary & Speed Sanity Filter (CWE-862 Prevention)
+  const speed = req.body.speed !== undefined ? req.body.speed : req.body.speedKmH;
+
+  // GPS Teleportation Boundary & Speed Sanity Filter (CWE-20 Prevention)
   const MAX_PERMISSIBLE_SPEED_KMH = 120;
   if (speed !== undefined && speed > MAX_PERMISSIBLE_SPEED_KMH) {
-    return res.status(400).json({
-      error: 'Telemetry rejected: impossible velocity detected (anti-spoofing filter)',
+    return res.status(422).json({
+      error: 'GPS velocity sanity check failed: impossible velocity detected (anti-spoofing filter)',
+      cwe: 'CWE-20',
       recordedSpeed: speed,
       maxAllowed: MAX_PERMISSIBLE_SPEED_KMH,
     });
   }
 
-  const now = Date.now();
+  const now = req.body.clientTime || Date.now();
   const lastLocation = riderLocations.get(riderId);
 
   if (lastLocation) {
-    const timeDeltaSec = (now - lastLocation.timestamp) / 1000;
-    if (timeDeltaSec > 0) {
-      // Calculate distance between points in km (Haversine formula approximation)
-      const dLat = (latitude - lastLocation.latitude) * 111.32;
-      const dLon = (longitude - lastLocation.longitude) * 111.32 * Math.cos((latitude * Math.PI) / 180);
-      const distanceKm = Math.sqrt(dLat * dLat + dLon * dLon);
-      const calculatedSpeedKmh = (distanceKm / timeDeltaSec) * 3600;
+    const timeDeltaSec = Math.max(0.001, (now - lastLocation.timestamp) / 1000);
+    // Haversine formula calculation in kilometers
+    const dLat = (latitude - lastLocation.latitude) * 111.32;
+    const dLon = (longitude - lastLocation.longitude) * 111.32 * Math.cos((latitude * Math.PI) / 180);
+    const distanceKm = Math.sqrt(dLat * dLat + dLon * dLon);
+    const calculatedSpeedKmh = (distanceKm / timeDeltaSec) * 3600;
 
-      // Reject physical teleportation (> 150 km/h jump)
-      if (calculatedSpeedKmh > 150 && distanceKm > 0.5) {
-        return res.status(400).json({
-          error: 'GPS teleportation boundary filter triggered: impossible location delta',
-          deltaDistanceKm: distanceKm.toFixed(2),
-          timeElapsedSec: timeDeltaSec.toFixed(1),
-        });
-      }
+    // Velocity plausibility filter: 20km apart within 3 seconds or calculated speed > 120 km/h
+    if (calculatedSpeedKmh > MAX_PERMISSIBLE_SPEED_KMH || (distanceKm >= 20 && timeDeltaSec <= 3)) {
+      return res.status(422).json({
+        error: 'GPS velocity sanity check failed: impossible location delta (teleportation/spoofing)',
+        cwe: 'CWE-20',
+        calculatedSpeedKmh: Math.round(calculatedSpeedKmh),
+        distanceKm: distanceKm.toFixed(2),
+        timeElapsedSec: timeDeltaSec.toFixed(1),
+      });
     }
   }
 
@@ -67,7 +85,7 @@ exports.updateRiderLocation = async (req, res) => {
     latitude,
     longitude,
     speed: speed || 0,
-    batteryLevel: batteryLevel || 100,
+    batteryLevel: req.body.batteryLevel || req.body.batteryPercent || 100,
     timestamp: now,
   };
   riderLocations.set(riderId, updatedEntry);

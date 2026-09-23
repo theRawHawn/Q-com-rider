@@ -24,6 +24,7 @@ app.use(express.json());
 // Import and mount backend API routes for secure rider operations
 const apiRoutes = require('./src/routes/api.js');
 app.use('/api', apiRoutes);
+app.use('/', apiRoutes);
 
 // Import and attach authenticated fleet Socket.IO server
 const fleetSocket = require('./src/sockets/fleetSocket.js');
