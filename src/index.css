@@ -1,22 +1,24 @@
 @import "tailwindcss";
 
-/* Ultra-thin subtle scrollbar with low opacity */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.28);
+/* Completely remove the scrolling side bar across all elements for a clean native mobile experience */
+html,
+body,
+#root,
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-overflow-scrolling: touch;
 }
