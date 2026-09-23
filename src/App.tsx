@@ -3,7 +3,6 @@ import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
 import { TaskProvider } from './context/TaskContext';
 import { TopHeader } from './components/layout/TopHeader';
-import { DesktopSidebar } from './components/layout/DesktopSidebar';
 import { MobileBottomNav, NavTab } from './components/layout/MobileBottomNav';
 import { SOSWidget } from './components/layout/SOSWidget';
 import { NotificationDrawer } from './components/notifications/NotificationDrawer';
@@ -24,46 +23,39 @@ const MainAppContent: React.FC = () => {
   const [isLocationOpen, setIsLocationOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-neutral-100/80 text-neutral-900 font-sans flex flex-col antialiased selection:bg-emerald-200">
-      {/* Sticky Top Header */}
-      <TopHeader
-        onOpenSupport={() => setIsSupportOpen(true)}
-        onOpenLocation={() => setIsLocationOpen(true)}
-      />
-
-      {/* Main Layout Container (Desktop Sidebar + Main Content Area) */}
-      <div className="flex-1 max-w-7xl w-full mx-auto flex">
-        {/* Desktop Sidebar */}
-        <DesktopSidebar activeTab={activeTab} onChangeTab={setActiveTab} />
+    <div className="min-h-screen bg-neutral-900 flex justify-center antialiased">
+      {/* Mobile-Only App Shell */}
+      <div className="w-full max-w-md min-h-screen bg-neutral-50 text-neutral-900 font-sans flex flex-col relative shadow-2xl overflow-x-hidden">
+        {/* Sticky Top Header */}
+        <TopHeader
+          onOpenSupport={() => setIsSupportOpen(true)}
+          onOpenLocation={() => setIsLocationOpen(true)}
+        />
 
         {/* View Content Area */}
-        <main className="flex-1 min-w-0 p-3.5 sm:p-6 lg:p-8 pb-20 md:pb-8">
-          <div className="max-w-md md:max-w-4xl mx-auto">
-            {activeTab === 'home' && (
-              <HomeOverview
-                onNavigateTab={(tab) => setActiveTab(tab)}
-              />
-            )}
+        <main className="flex-1 min-w-0 p-3.5 pb-24 overflow-y-auto">
+          {activeTab === 'home' && (
+            <HomeOverview onNavigateTab={(tab) => setActiveTab(tab)} />
+          )}
 
-            {activeTab === 'shifts' && <ShiftBookingView />}
+          {activeTab === 'shifts' && <ShiftBookingView />}
 
-            {activeTab === 'navigation' && <ActiveDeliveryWorkflow />}
+          {activeTab === 'navigation' && <ActiveDeliveryWorkflow />}
 
-            {activeTab === 'earnings' && <EarningsView />}
+          {activeTab === 'earnings' && <EarningsView />}
 
-            {activeTab === 'history' && <DeliveryHistoryView />}
+          {activeTab === 'history' && <DeliveryHistoryView />}
 
-            {activeTab === 'profile' && <ProfileView />}
-          </div>
+          {activeTab === 'profile' && <ProfileView />}
         </main>
-      </div>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <MobileBottomNav
-        activeTab={activeTab}
-        onChangeTab={setActiveTab}
-        onOpenNotifications={() => setIsNotificationsOpen(true)}
-      />
+        {/* Mobile Bottom Navigation Bar */}
+        <MobileBottomNav
+          activeTab={activeTab}
+          onChangeTab={setActiveTab}
+          onOpenNotifications={() => setIsNotificationsOpen(true)}
+        />
+      </div>
 
       {/* Rider Support Modal */}
       <RiderSupportModal

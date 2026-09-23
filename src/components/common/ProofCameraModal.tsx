@@ -2,14 +2,12 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Camera,
   CheckCircle2,
-  ShieldCheck,
   X,
   Upload,
-  Clock,
   RotateCcw,
   Sparkles,
   AlertCircle,
-  Plus,
+  Smartphone,
 } from 'lucide-react';
 import { Button } from './Button';
 import { Coordinates, ProofOfHandover } from '../../types/delivery';
@@ -46,6 +44,7 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
 }) => {
   const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const nativeCameraInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
@@ -54,10 +53,7 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
 
-  // Return period expiry details
   const expiryInfo = calculateReturnPeriodExpiry();
-
-  // Normalize order number formatting (avoid ##Q88192)
   const cleanOrderNumber = orderNumber.startsWith('#') ? orderNumber : `#${orderNumber}`;
 
   // Stop camera stream safely
@@ -75,7 +71,7 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
       setCameraError(null);
       try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          throw new Error('Camera API not accessible in this environment.');
+          throw new Error('Camera API not accessible');
         }
 
         if (stream) {
@@ -92,8 +88,8 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
             },
             audio: false,
           });
-        } catch (idealErr) {
-          // Fallback to standard video stream (e.g. laptop webcam)
+        } catch {
+          // Fallback to standard webcam/camera
           mediaStream = await navigator.mediaDevices.getUserMedia({
             video: true,
             audio: false,
@@ -106,32 +102,24 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
         if (videoRef.current) {
           videoRef.current.srcObject = mediaStream;
           videoRef.current.play().catch((err) => {
-            console.warn('Video playback warning:', err);
+            console.warn('Playback error:', err);
           });
         }
       } catch (err: any) {
-        console.warn('Direct camera start error:', err);
-        const isDenied =
-          err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError';
-        setCameraError(
-          isDenied
-            ? 'Camera access denied. Use device upload or quick proof.'
-            : 'Camera unavailable in preview. Use photo upload or quick proof.'
-        );
+        console.warn('Camera start error:', err);
+        setCameraError('Camera preview restricted. Use phone camera button below.');
         setCameraActive(false);
       }
     },
     [facingMode, stream]
   );
 
-  // Switch between front and back camera
   const toggleFacingMode = () => {
     const nextMode = facingMode === 'environment' ? 'user' : 'environment';
     setFacingMode(nextMode);
     startCamera(nextMode);
   };
 
-  // Lock body scroll and auto-start camera on open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -153,16 +141,7 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
     };
   }, [isOpen]);
 
-  // Synchronize video element with media stream
-  useEffect(() => {
-    if (cameraActive && stream && videoRef.current) {
-      videoRef.current.srcObject = stream;
-      videoRef.current.play().catch((err) => {
-        console.warn('Video play warning:', err);
-      });
-    }
-  }, [cameraActive, stream]);
-
+  // Synchronize video element ref
   const handleVideoRef = (element: HTMLVideoElement | null) => {
     videoRef.current = element;
     if (element && stream) {
@@ -173,10 +152,10 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
     }
   };
 
-  // Process and watermark photo, then add to photos array
+  // Watermark photo and add to state
   const processAndAddPhoto = async (rawImage: string) => {
     if (photos.length >= 3) {
-      showToast('Maximum 3 photos already added.', 'warning');
+      showToast('Maximum 3 photos added.', 'warning');
       return;
     }
 
@@ -203,10 +182,10 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
     });
 
     setPhotos((prev) => [...prev, watermarked]);
-    showToast(`Photo ${photos.length + 1} added successfully.`, 'info');
+    showToast(`Photo ${photos.length + 1} of 3 added.`, 'info');
   };
 
-  // Capture frame from video feed
+  // Capture current frame from live viewfinder
   const captureVideoFrame = async () => {
     if (!videoRef.current) return;
     const video = videoRef.current;
@@ -232,8 +211,8 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
     }
   };
 
-  // Upload photo from device
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle native camera capture (triggers system camera app like Gemini)
+  const handleNativeCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -243,13 +222,13 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
       const rawDataUrl = event.target?.result as string;
       await processAndAddPhoto(rawDataUrl);
       setIsProcessing(false);
-      // Reset input value so same file can be picked again if desired
+      if (nativeCameraInputRef.current) nativeCameraInputRef.current.value = '';
       if (fileInputRef.current) fileInputRef.current.value = '';
     };
     reader.readAsDataURL(file);
   };
 
-  // Quick simulated photo capture
+  // Quick proof sample
   const handleQuickCapture = async () => {
     setIsProcessing(true);
     const sampleRaw = generateSampleParcelImage(cleanOrderNumber, stage, photos.length + 1);
@@ -257,12 +236,10 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
     setIsProcessing(false);
   };
 
-  // Remove individual photo
   const handleRemovePhoto = (indexToRemove: number) => {
     setPhotos((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
-  // Confirm and persist handover proof
   const handleConfirm = () => {
     if (photos.length < 2) {
       showToast('Please add at least 2 pictures before confirming.', 'warning');
@@ -298,69 +275,31 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-neutral-900/40 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-neutral-200/80 overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-        {/* Standard Modal Header matching app pattern */}
-        <div className="px-5 py-4 border-b border-neutral-100 flex items-start justify-between bg-neutral-50/50 shrink-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-xs animate-in fade-in duration-200">
+      {/* Mobile-First Zero-Scroll Full Viewport Container */}
+      <div className="w-full max-w-md h-full sm:h-[620px] max-h-[100dvh] sm:max-h-[92vh] bg-neutral-900 text-white rounded-none sm:rounded-2xl shadow-2xl border-0 sm:border border-neutral-800 flex flex-col justify-between overflow-hidden">
+        {/* Compact Header (No scroll) */}
+        <div className="px-4 py-3 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between shrink-0">
           <div>
-            <h3 className="text-lg font-bold text-neutral-900 tracking-tight">
+            <h3 className="text-sm font-bold text-white tracking-tight">
               {stage === 'PICKUP' ? 'Store Pickup Photo Proof' : 'Customer Delivery Photo Proof'}
             </h3>
-            <p className="text-xs text-neutral-500 mt-0.5">
-              Order {cleanOrderNumber} · Anti-Tamper Verification
+            <p className="text-[11px] text-neutral-400">
+              Order {cleanOrderNumber} · {photos.length}/3 Photos {photos.length < 2 ? '(Min. 2 required)' : '(Ready)'}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-neutral-400 hover:text-white rounded-lg transition-colors cursor-pointer"
             title="Close"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Scrollable Modal Body */}
-        <div className="p-4 sm:p-5 space-y-3.5 overflow-y-auto flex-1">
-          {/* Security & Audit Notice */}
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 text-xs">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                Anti-Tamper Audit Protection
-              </span>
-              <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-bold">
-                {expiryInfo.daysRemaining} Days Retained
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
-              {stage === 'PICKUP'
-                ? 'Photograph the sealed bag showing the intact security seal and order barcode. Protects against claims of damaged or missing items before transit.'
-                : 'Photograph the parcel handover to the customer or at their doorstep. Protects against customer non-delivery or post-handover tampering disputes.'}
-            </p>
-            <div className="flex items-center gap-1 text-[10px] text-slate-500 pt-0.5 border-t border-slate-200">
-              <Clock className="w-3 h-3 text-slate-400 shrink-0" />
-              <span>
-                Retained in QCOM Audit Vault until return window closes on <strong>{expiryInfo.formatted}</strong>.
-              </span>
-            </div>
-          </div>
-
-          {/* Photo Count Tracker */}
-          <div className="flex items-center justify-between text-xs px-0.5">
-            <span className="font-bold text-neutral-800">
-              Photos Added: <span className="text-emerald-700">{photos.length} of 3</span>
-            </span>
-            <span
-              className={`text-[11px] font-medium ${
-                photos.length >= 2 ? 'text-emerald-600' : 'text-amber-700'
-              }`}
-            >
-              {photos.length < 2 ? 'Min. 2 pictures required' : '✓ Minimum met (Max 3)'}
-            </span>
-          </div>
-
-          {/* 3 Photo Slots Thumbnails Grid */}
+        {/* Compact 3-Photo Slots Strip (Takes only 44px, never overflows) */}
+        <div className="px-3 py-2 bg-neutral-950/80 border-b border-neutral-800 shrink-0">
           <div className="grid grid-cols-3 gap-2">
             {[0, 1, 2].map((idx) => {
               const photo = photos[idx];
@@ -369,43 +308,40 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
               return (
                 <div
                   key={idx}
-                  className={`relative rounded-xl border aspect-4/3 overflow-hidden flex flex-col items-center justify-center transition-all ${
+                  className={`h-11 rounded-lg border flex items-center justify-between px-2 text-[10px] relative overflow-hidden transition-all ${
                     photo
-                      ? 'border-emerald-500 bg-neutral-900 shadow-xs'
-                      : 'border-dashed border-neutral-300 bg-neutral-50/80'
+                      ? 'border-emerald-500 bg-neutral-900'
+                      : 'border-dashed border-neutral-700 bg-neutral-900/50 text-neutral-400'
                   }`}
                 >
                   {photo ? (
                     <>
-                      <img
-                        src={photo}
-                        alt={`Proof ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <img
+                          src={photo}
+                          alt={`Proof ${idx + 1}`}
+                          className="w-7 h-7 rounded object-cover border border-emerald-500 shrink-0"
+                        />
+                        <span className="font-bold text-emerald-400 truncate">Photo {idx + 1}</span>
+                      </div>
                       <button
                         type="button"
                         onClick={() => handleRemovePhoto(idx)}
-                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 hover:bg-red-600 text-white flex items-center justify-center transition-colors cursor-pointer shadow-xs"
-                        title="Remove this photo"
+                        className="w-4 h-4 rounded-full bg-neutral-800 hover:bg-red-600 text-white flex items-center justify-center shrink-0 ml-1 cursor-pointer transition-colors"
+                        title="Delete photo"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-2.5 h-2.5" />
                       </button>
-                      <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded backdrop-blur-xs">
-                        Photo {idx + 1}
-                      </div>
                     </>
                   ) : (
-                    <div className="text-center p-1 text-neutral-400">
-                      <Camera className="w-4 h-4 mx-auto mb-0.5 opacity-50 text-neutral-500" />
-                      <span className="text-[10px] block font-bold text-neutral-700 leading-tight">
-                        Photo {idx + 1}
-                      </span>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="font-medium text-neutral-400">Photo {idx + 1}</span>
                       <span
-                        className={`text-[9px] block ${
-                          isRequired ? 'text-amber-600 font-semibold' : 'text-neutral-400'
+                        className={`text-[9px] px-1 py-0.5 rounded font-bold ${
+                          isRequired ? 'bg-amber-950/80 text-amber-300' : 'bg-neutral-800 text-neutral-400'
                         }`}
                       >
-                        {isRequired ? 'Required' : 'Optional'}
+                        {isRequired ? 'Req' : 'Opt'}
                       </span>
                     </div>
                   )}
@@ -413,136 +349,154 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
               );
             })}
           </div>
+        </div>
 
-          {/* Live Viewfinder / Capture Area (Visible if less than 3 photos taken) */}
+        {/* Central Viewfinder Area - Directly Visible with ZERO Scrolling */}
+        <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
           {photos.length < 3 ? (
-            <div className="relative rounded-2xl bg-neutral-950 h-48 sm:h-52 w-full flex flex-col items-center justify-center overflow-hidden border border-neutral-300 shadow-inner">
-              {cameraActive ? (
-                /* Live Camera Stream */
-                <div className="relative w-full h-full">
-                  <video
-                    ref={handleVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover"
-                  />
+            cameraActive ? (
+              /* Live Camera Stream directly in view */
+              <div className="relative w-full h-full flex items-center justify-center bg-black">
+                <video
+                  ref={handleVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                />
 
-                  {/* Shutter Button & Controls inside Viewfinder */}
-                  <div className="absolute bottom-2.5 inset-x-0 flex items-center justify-center gap-6 z-20">
-                    <button
-                      type="button"
-                      onClick={toggleFacingMode}
-                      className="w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center border border-white/40 shadow-md cursor-pointer transition active:scale-95"
-                      title="Switch Camera (Front/Back)"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={captureVideoFrame}
-                      disabled={isProcessing}
-                      className="w-12 h-12 rounded-full border-3 border-white bg-red-600 hover:bg-red-500 shadow-xl cursor-pointer flex items-center justify-center transition-transform active:scale-95 shrink-0"
-                      title="Capture Photo"
-                    >
-                      <div className="w-4 h-4 rounded-full bg-white" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center border border-white/40 shadow-md cursor-pointer transition active:scale-95"
-                      title="Upload / Device Camera"
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                    </button>
+                {/* Framing Guidelines Overlay */}
+                <div className="absolute inset-6 border border-white/20 rounded-xl pointer-events-none flex flex-col justify-between p-3">
+                  <div className="flex justify-between">
+                    <div className="w-4 h-4 border-t-2 border-l-2 border-white" />
+                    <div className="w-4 h-4 border-t-2 border-r-2 border-white" />
+                  </div>
+                  <div className="flex justify-between">
+                    <div className="w-4 h-4 border-b-2 border-l-2 border-white" />
+                    <div className="w-4 h-4 border-b-2 border-r-2 border-white" />
                   </div>
                 </div>
-              ) : (
-                /* Fallback State */
-                <div className="text-center p-3 space-y-2.5 w-full">
-                  <div className="w-10 h-10 rounded-full bg-neutral-800 text-neutral-300 flex items-center justify-center mx-auto">
-                    <Camera className="w-5 h-5" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-bold text-white">
-                      Take Picture {photos.length + 1} of 3
-                    </p>
-                    <p className="text-[11px] text-neutral-400">
-                      {photos.length === 0
-                        ? 'Frame the security seal and order barcode'
-                        : photos.length === 1
-                        ? 'Frame the entire sealed parcel or handover point'
-                        : 'Capture additional verification angle'}
-                    </p>
-                  </div>
 
-                  {cameraError && (
-                    <p className="text-[11px] text-amber-300 bg-amber-950/60 p-1.5 rounded-lg border border-amber-800/60 flex items-center gap-1.5 justify-center max-w-xs mx-auto">
-                      <AlertCircle className="w-3 h-3 text-amber-400 shrink-0" />
-                      <span>{cameraError}</span>
-                    </p>
-                  )}
+                {/* Floating Bottom Shutter & Controls */}
+                <div className="absolute bottom-4 inset-x-0 flex items-center justify-center gap-7 z-20">
+                  {/* Native Device Camera Button (Direct phone camera like Gemini) */}
+                  <button
+                    type="button"
+                    onClick={() => nativeCameraInputRef.current?.click()}
+                    className="w-10 h-10 rounded-full bg-neutral-900/80 hover:bg-neutral-800 text-white flex items-center justify-center border border-white/30 shadow-lg cursor-pointer transition active:scale-95"
+                    title="Open Native Phone Camera"
+                  >
+                    <Smartphone className="w-4 h-4 text-emerald-400" />
+                  </button>
 
-                  <div className="flex flex-wrap gap-2 justify-center pt-0.5">
+                  {/* Main Shutter Button */}
+                  <button
+                    type="button"
+                    onClick={captureVideoFrame}
+                    disabled={isProcessing}
+                    className="w-16 h-16 rounded-full border-4 border-white bg-red-600 hover:bg-red-500 shadow-2xl cursor-pointer flex items-center justify-center transition-transform active:scale-95 shrink-0"
+                    title="Snap Picture"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-white" />
+                  </button>
+
+                  {/* Flip Camera */}
+                  <button
+                    type="button"
+                    onClick={toggleFacingMode}
+                    className="w-10 h-10 rounded-full bg-neutral-900/80 hover:bg-neutral-800 text-white flex items-center justify-center border border-white/30 shadow-lg cursor-pointer transition active:scale-95"
+                    title="Flip Camera"
+                  >
+                    <RotateCcw className="w-4 h-4 text-neutral-300" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Fallback / Camera Permission Restricted (Direct Phone Camera trigger) */
+              <div className="text-center p-4 space-y-3 w-full max-w-xs mx-auto">
+                <div className="w-12 h-12 rounded-full bg-neutral-800 text-neutral-300 flex items-center justify-center mx-auto">
+                  <Camera className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-white">Take Picture {photos.length + 1} of 3</p>
+                  <p className="text-xs text-neutral-400">
+                    Use your phone's native camera or quick capture.
+                  </p>
+                </div>
+
+                {cameraError && (
+                  <p className="text-[11px] text-amber-300 bg-amber-950/60 p-2 rounded-lg border border-amber-800/60 flex items-center gap-1.5 justify-center">
+                    <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>{cameraError}</span>
+                  </p>
+                )}
+
+                <div className="flex flex-col gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => nativeCameraInputRef.current?.click()}
+                    className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md transition active:scale-98"
+                  >
+                    <Camera className="w-4 h-4" />
+                    Open Phone Camera
+                  </button>
+
+                  <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => startCamera()}
-                      className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1 cursor-pointer shadow-xs"
+                      className="flex-1 py-2 bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 border border-neutral-700 cursor-pointer"
                     >
-                      <Camera className="w-3.5 h-3.5" />
-                      Live Camera
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-2.5 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1 cursor-pointer border border-neutral-700 shadow-xs"
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                      Device Camera
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Retry Preview
                     </button>
 
                     <button
                       type="button"
                       onClick={handleQuickCapture}
-                      className="px-2.5 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-amber-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1 cursor-pointer border border-neutral-700 shadow-xs"
+                      className="flex-1 py-2 bg-neutral-800 hover:bg-neutral-700 text-amber-300 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 border border-neutral-700 cursor-pointer"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                       Quick Proof
                     </button>
                   </div>
                 </div>
-              )}
-
-              {/* Hidden file / native camera input */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={handleFileUpload}
-              />
-            </div>
+              </div>
+            )
           ) : (
-            /* All 3 Photos Captured Message */
-            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-1">
-              <CheckCircle2 className="w-6 h-6 text-emerald-600 mx-auto" />
-              <p className="text-xs font-bold text-emerald-900">
-                All 3 Verification Pictures Added
-              </p>
-              <p className="text-[11px] text-emerald-700">
-                You can review or delete any photo above, or click Confirm and save.
-              </p>
+            /* Max 3 Photos Added View */
+            <div className="p-6 text-center space-y-3">
+              <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
+              <div className="space-y-1">
+                <h4 className="text-base font-bold text-white">All 3 Photos Captured</h4>
+                <p className="text-xs text-neutral-400">
+                  Minimum verification met. Click Confirm and save below to continue.
+                </p>
+              </div>
             </div>
           )}
+
+          {/* Direct Native Camera System Input (Standard Mobile Camera API) */}
+          <input
+            ref={nativeCameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleNativeCameraCapture}
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleNativeCameraCapture}
+          />
         </div>
 
-        {/* Pinned Footer Actions */}
-        <div className="px-5 py-4 border-t border-neutral-100 bg-white shrink-0 flex items-center justify-between gap-3">
-          <Button variant="outline" size="sm" onClick={onClose}>
+        {/* Pinned Footer (Zero scroll, always visible) */}
+        <div className="px-4 py-3 bg-neutral-900 border-t border-neutral-800 shrink-0 flex items-center justify-between gap-3">
+          <Button variant="outline" size="sm" onClick={onClose} className="border-neutral-700 text-neutral-300 hover:bg-neutral-800">
             Cancel
           </Button>
 
