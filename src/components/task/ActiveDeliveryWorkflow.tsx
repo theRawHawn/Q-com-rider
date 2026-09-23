@@ -203,12 +203,12 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
         </div>
 
         {/* 3 Dedicated Maps and Workflow Phases */}
-        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-neutral-100">
+        <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-neutral-100">
           {/* Map 1: Rider -> Seller */}
           <button
             type="button"
             onClick={() => setSelectedMapMode('RIDER_TO_SELLER')}
-            className={`p-2.5 rounded-xl text-left transition cursor-pointer ${
+            className={`p-2 rounded-xl text-left transition cursor-pointer ${
               activeMapMode === 'RIDER_TO_SELLER'
                 ? 'bg-blue-50/90 border-2 border-blue-500 ring-2 ring-blue-100'
                 : 'hover:bg-neutral-50 border border-neutral-200/80'
@@ -221,7 +221,7 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
                   : 'bg-neutral-200'
               }`}
             />
-            <span className="text-xs font-bold text-neutral-900 block leading-tight">
+            <span className="text-[10px] font-semibold text-neutral-600/80 block leading-tight whitespace-nowrap truncate">
               1. Rider → Seller
             </span>
           </button>
@@ -230,7 +230,7 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
           <button
             type="button"
             onClick={() => setSelectedMapMode('SELLER_TO_CUSTOMER')}
-            className={`p-2.5 rounded-xl text-left transition cursor-pointer ${
+            className={`p-2 rounded-xl text-left transition cursor-pointer ${
               activeMapMode === 'SELLER_TO_CUSTOMER'
                 ? 'bg-blue-50/90 border-2 border-blue-500 ring-2 ring-blue-100'
                 : 'hover:bg-neutral-50 border border-neutral-200/80'
@@ -243,8 +243,8 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
                   : 'bg-neutral-200'
               }`}
             />
-            <span className="text-xs font-bold text-neutral-900 block leading-tight">
-              2. Seller → Customer
+            <span className="text-[10px] font-semibold text-neutral-600/80 block leading-tight whitespace-nowrap truncate">
+              2. Seller → Cust.
             </span>
           </button>
 
@@ -252,7 +252,7 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
           <button
             type="button"
             onClick={() => setSelectedMapMode('VERIFICATION')}
-            className={`p-2.5 rounded-xl text-left transition cursor-pointer ${
+            className={`p-2 rounded-xl text-left transition cursor-pointer ${
               activeMapMode === 'VERIFICATION'
                 ? 'bg-amber-50/90 border-2 border-amber-500 ring-2 ring-amber-100'
                 : 'hover:bg-neutral-50 border border-neutral-200/80'
@@ -263,7 +263,7 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
                 isArrivedDropStage ? 'bg-amber-500' : 'bg-neutral-200'
               }`}
             />
-            <span className="text-xs font-bold text-neutral-900 block leading-tight">
+            <span className="text-[10px] font-semibold text-neutral-600/80 block leading-tight whitespace-nowrap truncate">
               3. Verification
             </span>
           </button>
