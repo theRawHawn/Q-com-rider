@@ -5,6 +5,7 @@
 
 import { DeliveryTask, OrderStatus, ProofOfHandover } from '../types/delivery';
 import { INITIAL_ACTIVE_TASK, UNASSIGNED_BROADCAST_TASKS, INITIAL_COMPLETED_TASKS } from './mockData';
+import { authService } from './authService';
 
 class DeliveryTaskService {
   private activeTask: DeliveryTask | null = null;
@@ -50,6 +51,11 @@ class DeliveryTaskService {
    * NEW BACKEND/API REQUIREMENT: POST /api/delivery/tasks/:id/accept
    */
   public acceptBroadcastTask(taskId: string): DeliveryTask {
+    const currentPartner = authService.getPartner();
+    if (!currentPartner.isOnline) {
+      throw new Error('Cannot accept or assign orders while profile is offline. Switch to Online duty first.');
+    }
+
     const taskIndex = this.broadcastTasks.findIndex((t) => t.id === taskId);
     if (taskIndex === -1) {
       throw new Error('Task no longer available or already accepted by another partner.');

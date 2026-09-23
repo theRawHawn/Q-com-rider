@@ -99,3 +99,52 @@ exports.updateRiderLocation = async (req, res) => {
     verifiedAuth: true,
   });
 };
+
+// In-memory rider duty status store
+const riderDutyStatuses = new Map([
+  ['rider_77', { isOnline: false, dutyStatus: 'offline', acceptNextOrder: false }],
+  ['RIDER-4029', { isOnline: false, dutyStatus: 'offline', acceptNextOrder: false }],
+]);
+
+/**
+ * Updates rider online/offline duty status
+ * When rider is offline (even during an active order), the system refuses to dispatch/assign new orders.
+ */
+exports.updateDutyStatus = async (req, res) => {
+  const riderId = req.user ? req.user.riderId : (req.body.riderId || 'rider_77');
+  const { isOnline, dutyStatus, acceptNextOrder } = req.body;
+  const status = {
+    riderId,
+    isOnline: Boolean(isOnline),
+    dutyStatus: dutyStatus || (isOnline ? 'idle_at_hub' : 'offline'),
+    acceptNextOrder: isOnline ? (acceptNextOrder !== false) : false,
+    updatedAt: new Date().toISOString(),
+  };
+  riderDutyStatuses.set(riderId, status);
+  return res.status(200).json({
+    success: true,
+    ...status,
+    message: isOnline
+      ? 'Rider is marked ONLINE and ready for orders'
+      : 'Rider is marked OFFLINE: system will not assign any new orders',
+  });
+};
+
+/**
+ * Retrieves authoritative duty status for rider
+ */
+exports.getDutyStatus = async (req, res) => {
+  const riderId = req.user ? req.user.riderId : (req.query.riderId || 'rider_77');
+  const status = riderDutyStatuses.get(riderId) || { isOnline: false, acceptNextOrder: false };
+  return res.status(200).json({
+    success: true,
+    riderId,
+    ...status,
+  });
+};
+
+exports.isRiderOnline = (riderId) => {
+  const status = riderDutyStatuses.get(riderId);
+  return status ? status.isOnline : false;
+};
+

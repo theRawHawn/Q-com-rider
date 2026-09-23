@@ -14,8 +14,10 @@ import {
   Lock,
   Image as ImageIcon,
   RotateCw,
+  Pause,
 } from 'lucide-react';
 import { useTask } from '../../context/TaskContext';
+import { useAuth } from '../../context/AuthContext';
 import { Button } from '../common/Button';
 import { Badge } from '../common/Badge';
 import { InteractiveMap } from '../navigation/InteractiveMap';
@@ -44,6 +46,7 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
     recordCodDelivery,
     returnOrderToHub,
   } = useTask();
+  const { partner, toggleOnlineDuty } = useAuth();
   const { showToast } = useToast();
 
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
@@ -126,6 +129,70 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
         <span className="text-[11px] font-semibold text-neutral-500">
           Est. SLA: <strong className="text-neutral-900">{activeTask.estimatedDeliveryAt}</strong>
         </span>
+      </div>
+
+      {/* Duty Status Control: Mark profile offline so system does not assign next order */}
+      <div
+        className={`p-3 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-3 ${
+          partner.isOnline
+            ? 'bg-white border-neutral-200/80 shadow-xs'
+            : 'bg-amber-50/90 border-amber-200/80 shadow-xs'
+        }`}
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div
+            className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${
+              partner.isOnline ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-100 text-amber-700'
+            }`}
+          >
+            {partner.isOnline ? (
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+              </span>
+            ) : (
+              <Pause className="w-3.5 h-3.5" />
+            )}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold text-neutral-900 truncate">
+                {partner.isOnline ? 'Accepting Next Order' : 'Marked Offline (No Next Order)'}
+              </span>
+              <span
+                className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md ${
+                  partner.isOnline
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-amber-200/80 text-amber-900'
+                }`}
+              >
+                {partner.isOnline ? 'Online' : 'Offline'}
+              </span>
+            </div>
+            <p className="text-[11px] text-neutral-500 truncate mt-0.5">
+              {partner.isOnline
+                ? 'System will assign next delivery once completed'
+                : 'System will not assign new orders after this delivery'}
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => toggleOnlineDuty(!partner.isOnline)}
+          className={`px-3 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer shrink-0 border shadow-2xs active:scale-95 ${
+            partner.isOnline
+              ? 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
+              : 'bg-[#009DE0] hover:bg-[#0082BD] text-white border-[#009DE0]'
+          }`}
+          title={
+            partner.isOnline
+              ? 'Disable/mark profile offline so system does not assign new orders'
+              : 'Turn online duty back on to accept orders after this delivery'
+          }
+        >
+          {partner.isOnline ? 'Go Offline' : 'Go Online'}
+        </button>
       </div>
 
       {/* Full-view Rider Route Navigation Map */}

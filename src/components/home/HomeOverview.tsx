@@ -37,12 +37,13 @@ export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => 
   // Hook notification tap action to open task modal
   useEffect(() => {
     pushNotificationService.setOnTaskOpenCallback((taskId) => {
+      if (!partner.isOnline) return;
       const task = broadcastTasks.find((t) => t.id === taskId) || deliveryTaskService.getActiveTask();
       if (task) {
         setAssignedTaskModal(task);
       }
     });
-  }, [broadcastTasks]);
+  }, [broadcastTasks, partner.isOnline]);
 
   // Production Real-Life Order Dispatch Stream:
   // Once online, continuously receives new orders like Swiggy/Zomato/Zepto
@@ -143,7 +144,7 @@ export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => 
       {/* 1. HERO OPERATIONAL DUTY CARD */}
 
       {/* State A: Offline - Clean tactile card with clear call to action */}
-      {!partner.isOnline && (
+      {!partner.isOnline && !activeTask && (
         <div className="bg-white border border-neutral-200/80 rounded-3xl p-5 shadow-xs space-y-4 relative overflow-hidden">
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-1">
@@ -244,7 +245,7 @@ export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => 
         <div className="p-5 rounded-3xl bg-white border-2 border-[#009DE0]/40 shadow-sm space-y-3.5">
           <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#009DE0] animate-pulse" />
+              <span className={`w-2.5 h-2.5 rounded-full ${partner.isOnline ? 'bg-[#009DE0] animate-pulse' : 'bg-amber-500'}`} />
               <span className="text-xs font-black uppercase text-[#009DE0] tracking-wider">
                 ACTIVE DELIVERY
               </span>
@@ -253,6 +254,33 @@ export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => 
             <span className="text-xs font-semibold text-neutral-500 bg-neutral-100 px-2.5 py-1 rounded-xl border border-neutral-200">
               {activeTask.estimatedDeliveryAt}
             </span>
+          </div>
+
+          {/* Duty status toggle on active card */}
+          <div className={`flex items-center justify-between p-2.5 rounded-2xl border text-xs ${
+            partner.isOnline
+              ? 'bg-neutral-50/90 border-neutral-200/70'
+              : 'bg-amber-50/80 border-amber-200/80'
+          }`}>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${partner.isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+              <span className="text-[11px] font-semibold text-neutral-700 truncate">
+                {partner.isOnline
+                  ? 'Accepting next order upon delivery'
+                  : 'Profile Offline: No orders assigned next'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => toggleOnlineDuty(!partner.isOnline)}
+              className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition cursor-pointer shrink-0 shadow-2xs active:scale-95 ${
+                partner.isOnline
+                  ? 'bg-white hover:bg-neutral-100 text-neutral-700 border-neutral-300'
+                  : 'bg-[#009DE0] hover:bg-[#0082BD] text-white border-[#009DE0]'
+              }`}
+            >
+              {partner.isOnline ? 'Go Offline' : 'Go Online'}
+            </button>
           </div>
 
           <div className="bg-neutral-50/90 p-3.5 rounded-2xl border border-neutral-200/60 text-xs space-y-3">

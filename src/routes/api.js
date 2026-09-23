@@ -17,6 +17,25 @@ router.post(
   telemetryController.updateRiderLocation
 );
 
+// Rider online/offline duty status toggle & query
+router.post(
+  [
+    '/qrider/duty-status',
+    '/vulnerable/qrider/duty-status',
+    '/delivery/rider/duty-status',
+  ],
+  telemetryController.updateDutyStatus
+);
+
+router.get(
+  [
+    '/qrider/duty-status',
+    '/vulnerable/qrider/duty-status',
+    '/delivery/rider/duty-status',
+  ],
+  telemetryController.getDutyStatus
+);
+
 // Finding 2: Cash-on-Delivery reconciliation (CWE-602)
 router.post(
   ['/vulnerable/qrider/cod/reconcile', '/qrider/cod/reconcile'],
