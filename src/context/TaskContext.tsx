@@ -4,6 +4,7 @@ import { deliveryTaskService } from '../services/deliveryTaskService';
 import { earningsService } from '../services/earningsService';
 import { floatingCashService } from '../services/floatingCashService';
 import { audioNotificationService } from '../services/audioNotificationService';
+import { pushNotificationService } from '../services/pushNotificationService';
 import { useToast } from './ToastContext';
 
 interface TaskContextType {
@@ -81,7 +82,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         nextTask = deliveryTaskService.acceptBroadcastTask(fresh.id);
       }
       refreshState();
-      audioNotificationService.playNewOrderTone();
+      pushNotificationService.showIncomingOrderNotification(nextTask);
       showToast(`New order assigned: ${nextTask.orderNumber}! Navigate to pickup.`, 'info');
     }, 2000);
   };

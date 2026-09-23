@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Zap,
   Navigation,
@@ -19,6 +19,8 @@ import { DeliveryTask } from '../../types/delivery';
 import { useToast } from '../../context/ToastContext';
 import { ShiftIndicatorGraphic } from './ShiftIndicatorGraphic';
 import { audioNotificationService } from '../../services/audioNotificationService';
+import { pushNotificationService } from '../../services/pushNotificationService';
+import { deliveryTaskService } from '../../services/deliveryTaskService';
 
 interface HomeOverviewProps {
   onNavigateTab: (tab: NavTab) => void;
@@ -32,21 +34,72 @@ export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => 
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [assignedTaskModal, setAssignedTaskModal] = useState<DeliveryTask | null>(null);
 
+  // Hook notification tap action to open task modal
+  useEffect(() => {
+    pushNotificationService.setOnTaskOpenCallback((taskId) => {
+      const task = broadcastTasks.find((t) => t.id === taskId) || deliveryTaskService.getActiveTask();
+      if (task) {
+        setAssignedTaskModal(task);
+      }
+    });
+  }, [broadcastTasks]);
+
+  // Production Real-Life Order Dispatch Stream:
+  // Once online, continuously receives new orders like Swiggy/Zomato/Zepto
+  useEffect(() => {
+    if (!partner.isOnline || activeTask) {
+      return;
+    }
+
+    // Interval to simulate continuous live store dispatch every 22 seconds
+    const dispatchInterval = setInterval(() => {
+      if (!activeTask && !assignedTaskModal) {
+        let taskToAssign: DeliveryTask;
+        const available = broadcastTasks[0];
+        if (available) {
+          taskToAssign = available;
+        } else {
+          taskToAssign = deliveryTaskService.generateIncomingTask();
+        }
+
+        setAssignedTaskModal(taskToAssign);
+        pushNotificationService.showIncomingOrderNotification(taskToAssign);
+        showToast(`⚡ New Order: ${taskToAssign.orderNumber} (₹${taskToAssign.payoutBreakdown.totalPayout})`, 'info');
+      }
+    }, 22000);
+
+    return () => clearInterval(dispatchInterval);
+  }, [partner.isOnline, activeTask, assignedTaskModal, broadcastTasks]);
+
   // Trigger immediate search and auto-assignment when rider goes online
-  const handleGoOnline = () => {
+  const handleGoOnline = async () => {
     toggleOnlineDuty(true);
     setIsSearching(true);
 
-    // Auto-search and assign order within 1.2s
+    // Request mobile notification bar permissions and lock screen support
+    await pushNotificationService.requestNotificationPermission();
+    pushNotificationService.enableOnlineWakeLock();
+
+    // Auto-search and assign first order within 1.2s
     setTimeout(() => {
       setIsSearching(false);
-      const available = broadcastTasks[0] || null;
+      let available = broadcastTasks[0];
+      if (!available) {
+        available = deliveryTaskService.generateIncomingTask();
+      }
+
       if (available && !activeTask) {
         setAssignedTaskModal(available);
-        audioNotificationService.playNewOrderTone();
+        pushNotificationService.showIncomingOrderNotification(available);
         showToast('New Delivery Request Assigned!', 'info');
       }
     }, 1200);
+  };
+
+  const handleGoOffline = () => {
+    toggleOnlineDuty(false);
+    pushNotificationService.disableOnlineWakeLock();
+    showToast('You are now Offline. Duty ended.', 'info');
   };
 
   // If already online and active task exists or user searches manually
@@ -54,10 +107,13 @@ export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => 
     setIsSearching(true);
     setTimeout(() => {
       setIsSearching(false);
-      const available = broadcastTasks[0] || null;
+      let available = broadcastTasks[0];
+      if (!available) {
+        available = deliveryTaskService.generateIncomingTask();
+      }
       if (available && !activeTask) {
         setAssignedTaskModal(available);
-        audioNotificationService.playNewOrderTone();
+        pushNotificationService.showIncomingOrderNotification(available);
         showToast('New Delivery Request Found!', 'info');
       } else {
         showToast('Scanning hub... No new requests at this moment', 'info');
@@ -159,7 +215,7 @@ export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => 
             </div>
 
             <button
-              onClick={() => toggleOnlineDuty(false)}
+              onClick={handleGoOffline}
               className="text-xs font-bold text-neutral-400 hover:text-neutral-700 underline cursor-pointer"
             >
               Go Offline
