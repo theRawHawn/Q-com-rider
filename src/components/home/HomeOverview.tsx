@@ -18,31 +18,10 @@ import { NavTab } from '../layout/MobileBottomNav';
 import { DeliveryTask } from '../../types/delivery';
 import { useToast } from '../../context/ToastContext';
 import { ShiftIndicatorGraphic } from './ShiftIndicatorGraphic';
+import { audioNotificationService } from '../../services/audioNotificationService';
 
 interface HomeOverviewProps {
   onNavigateTab: (tab: NavTab) => void;
-}
-
-// Synthesized dispatch sound effect for incoming order alert
-function playDispatchChime() {
-  try {
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.12); // A5
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.35);
-  } catch {
-    // Audio context may be restricted by browser until first gesture
-  }
 }
 
 export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => {
@@ -64,7 +43,7 @@ export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => 
       const available = broadcastTasks[0] || null;
       if (available && !activeTask) {
         setAssignedTaskModal(available);
-        playDispatchChime();
+        audioNotificationService.playNewOrderTone();
         showToast('New Delivery Request Assigned!', 'info');
       }
     }, 1200);
@@ -78,7 +57,7 @@ export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => 
       const available = broadcastTasks[0] || null;
       if (available && !activeTask) {
         setAssignedTaskModal(available);
-        playDispatchChime();
+        audioNotificationService.playNewOrderTone();
         showToast('New Delivery Request Found!', 'info');
       } else {
         showToast('Scanning hub... No new requests at this moment', 'info');

@@ -4,17 +4,43 @@ import {
   Phone,
   LogOut,
   Mail,
+  Volume2,
+  VolumeX,
+  BellRing,
+  Play,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { KycAssetSection } from './KycAssetSection';
 import { PerformanceScorecardSection } from './PerformanceScorecardSection';
 import { BatteryStatusCard } from '../../modules/battery-telemetry';
+import { audioNotificationService } from '../../services/audioNotificationService';
+import { useToast } from '../../context/ToastContext';
 
 type ProfileSubTab = 'performance' | 'kyc_assets' | 'account_telemetry';
 
 export const ProfileView: React.FC = () => {
   const { partner, logout } = useAuth();
+  const { showToast } = useToast();
   const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>('performance');
+  const [isAudioMuted, setIsAudioMuted] = useState(() => audioNotificationService.getIsMuted());
+  const [volume, setVolume] = useState(() => audioNotificationService.getVolume());
+
+  const handleToggleMute = () => {
+    const muted = audioNotificationService.toggleMute();
+    setIsAudioMuted(muted);
+    showToast(muted ? 'Order alert tone muted' : 'Order alert tone enabled', 'info');
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    setVolume(val);
+    audioNotificationService.setVolume(val);
+  };
+
+  const handleTestSound = () => {
+    audioNotificationService.playNewOrderTone();
+    showToast('Playing Swiggy/Zomato dispatch tone...', 'info');
+  };
 
   return (
     <div className="space-y-4 animate-in fade-in duration-200 pb-12 max-w-md mx-auto">
@@ -107,6 +133,72 @@ export const ProfileView: React.FC = () => {
               vehicleId={partner.vehicleNumber}
             />
           )}
+
+          {/* Order Alert Sound & Ringtone Settings (Swiggy / Zomato Style) */}
+          <div className="p-4 bg-white rounded-3xl border border-neutral-200/80 shadow-xs space-y-3 text-xs">
+            <div className="flex items-center justify-between pb-1 border-b border-neutral-100">
+              <div className="flex items-center gap-2">
+                <BellRing className="w-4 h-4 text-[#009DE0]" />
+                <h3 className="text-xs font-black text-neutral-900">
+                  Order Alert Tone (Swiggy / Zomato style)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={handleToggleMute}
+                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border transition cursor-pointer flex items-center gap-1 ${
+                  isAudioMuted
+                    ? 'bg-rose-50 border-rose-200 text-rose-700'
+                    : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                }`}
+              >
+                {isAudioMuted ? (
+                  <>
+                    <VolumeX className="w-3.5 h-3.5" />
+                    <span>Muted</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Active</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <p className="text-[11px] text-neutral-500">
+              High-priority audio ringtone and haptic vibration for incoming delivery tasks.
+            </p>
+
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-600 font-semibold text-[11px]">Ringtone Volume</span>
+                <span className="font-mono font-bold text-neutral-800 text-[11px]">
+                  {Math.round(volume * 100)}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0.1"
+                max="1"
+                step="0.05"
+                value={volume}
+                onChange={handleVolumeChange}
+                disabled={isAudioMuted}
+                className="w-full accent-[#009DE0] cursor-pointer"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleTestSound}
+              disabled={isAudioMuted}
+              className="w-full py-2.5 px-3 rounded-2xl bg-[#EBF7FD] hover:bg-[#d8eefb] border border-[#009DE0]/30 text-[#009DE0] font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition active:scale-[0.99] disabled:opacity-50"
+            >
+              <Play className="w-3.5 h-3.5 fill-[#009DE0]" />
+              <span>Test Order Alert Tone</span>
+            </button>
+          </div>
 
           {/* Bank & Payout Details */}
           <div className="p-4 bg-white rounded-3xl border border-neutral-200/80 shadow-xs space-y-3 text-xs">

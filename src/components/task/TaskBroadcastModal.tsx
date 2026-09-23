@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { MapPin, Clock, DollarSign, Package, Check, Zap, ArrowRight } from 'lucide-react';
 import { DeliveryTask } from '../../types/delivery';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { Badge } from '../common/Badge';
 import { useTask } from '../../context/TaskContext';
+import { audioNotificationService } from '../../services/audioNotificationService';
 
 interface TaskBroadcastModalProps {
   task: DeliveryTask;
@@ -19,8 +20,26 @@ export const TaskBroadcastModal: React.FC<TaskBroadcastModalProps> = ({
 }) => {
   const { acceptBroadcastTask } = useTask();
 
+  useEffect(() => {
+    if (isOpen) {
+      audioNotificationService.startOrderAlertLoop();
+    } else {
+      audioNotificationService.stopOrderAlertLoop();
+    }
+    return () => {
+      audioNotificationService.stopOrderAlertLoop();
+    };
+  }, [isOpen, task.id]);
+
   const handleAccept = () => {
+    audioNotificationService.stopOrderAlertLoop();
+    audioNotificationService.playActionBeep();
     acceptBroadcastTask(task.id);
+    onClose();
+  };
+
+  const handleReject = () => {
+    audioNotificationService.stopOrderAlertLoop();
     onClose();
   };
 
@@ -114,7 +133,7 @@ export const TaskBroadcastModal: React.FC<TaskBroadcastModalProps> = ({
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-3 pt-2">
-          <Button variant="outline" onClick={onClose} fullWidth>
+          <Button variant="outline" onClick={handleReject} fullWidth>
             Reject
           </Button>
           <Button variant="brand" onClick={handleAccept} fullWidth icon={<Zap className="w-4 h-4" />}>

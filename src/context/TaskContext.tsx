@@ -3,6 +3,7 @@ import { DeliveryTask, OrderStatus, ProofOfHandover } from '../types/delivery';
 import { deliveryTaskService } from '../services/deliveryTaskService';
 import { earningsService } from '../services/earningsService';
 import { floatingCashService } from '../services/floatingCashService';
+import { audioNotificationService } from '../services/audioNotificationService';
 import { useToast } from './ToastContext';
 
 interface TaskContextType {
@@ -80,6 +81,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         nextTask = deliveryTaskService.acceptBroadcastTask(fresh.id);
       }
       refreshState();
+      audioNotificationService.playNewOrderTone();
       showToast(`New order assigned: ${nextTask.orderNumber}! Navigate to pickup.`, 'info');
     }, 2000);
   };
@@ -95,6 +97,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         task.payoutBreakdown.customerTip
       );
       refreshState();
+      audioNotificationService.playDeliverySuccessChime();
       showToast(`Delivery verified! ₹${task.payoutBreakdown.totalPayout} credited to wallet.`, 'success');
       scheduleNextOrderAssignment();
       return true;
@@ -115,6 +118,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         task.payoutBreakdown.customerTip
       );
       refreshState();
+      audioNotificationService.playDeliverySuccessChime();
       showToast(`Contactless proof verified! ₹${task.payoutBreakdown.totalPayout} credited.`, 'success');
       scheduleNextOrderAssignment();
       return true;
@@ -134,6 +138,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         task.payoutBreakdown.customerTip
       );
       refreshState();
+      audioNotificationService.playDeliverySuccessChime();
       showToast(`COD ₹${amountCollected} collected. ₹${task.payoutBreakdown.totalPayout} payout credited.`, 'success');
       scheduleNextOrderAssignment();
       return true;

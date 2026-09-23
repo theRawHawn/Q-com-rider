@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { X, ArrowRight } from 'lucide-react';
+import { X, ArrowRight, Volume2, VolumeX } from 'lucide-react';
 import { DeliveryTask } from '../../types/delivery';
 import { createHubIcon, createDestinationIcon, createRiderIcon } from '../navigation/InteractiveMap';
+import { audioNotificationService } from '../../services/audioNotificationService';
 
 interface DeliveryRequestModalProps {
   task: DeliveryTask;
@@ -19,6 +20,37 @@ export const DeliveryRequestModal: React.FC<DeliveryRequestModalProps> = ({
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const [isMuted, setIsMuted] = useState(() => audioNotificationService.getIsMuted());
+
+  // Trigger continuous Swiggy/Zomato style dispatch order chime loop while request is open
+  useEffect(() => {
+    if (isOpen) {
+      audioNotificationService.startOrderAlertLoop();
+    } else {
+      audioNotificationService.stopOrderAlertLoop();
+    }
+
+    return () => {
+      audioNotificationService.stopOrderAlertLoop();
+    };
+  }, [isOpen, task.id]);
+
+  const handleToggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const muted = audioNotificationService.toggleMute();
+    setIsMuted(muted);
+  };
+
+  const handleStart = () => {
+    audioNotificationService.stopOrderAlertLoop();
+    audioNotificationService.playActionBeep();
+    onStartOrder(task);
+  };
+
+  const handleDismiss = () => {
+    audioNotificationService.stopOrderAlertLoop();
+    onClose();
+  };
 
   // Initialize Leaflet mini route map for the request view
   useEffect(() => {
@@ -104,15 +136,42 @@ export const DeliveryRequestModal: React.FC<DeliveryRequestModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col justify-between overflow-hidden animate-in fade-in duration-150 max-w-md mx-auto w-full h-full shadow-2xl">
-      {/* Sleek Floating Dismiss Button in Top-Left */}
-      <button
-        type="button"
-        onClick={onClose}
-        className="absolute top-4 left-4 z-30 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-neutral-200/80 flex items-center justify-center text-neutral-700 hover:text-neutral-950 transition-colors cursor-pointer active:scale-95"
-        title="Dismiss"
-      >
-        <X className="w-5 h-5" />
-      </button>
+      {/* Top Floating Controls */}
+      <div className="absolute top-4 inset-x-4 z-30 flex items-center justify-between pointer-events-none">
+        {/* Sleek Dismiss Button in Top-Left */}
+        <button
+          type="button"
+          onClick={handleDismiss}
+          className="pointer-events-auto w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-neutral-200/80 flex items-center justify-center text-neutral-700 hover:text-neutral-950 transition-colors cursor-pointer active:scale-95"
+          title="Dismiss"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* Audio Mute/Unmute Toggle in Top-Right */}
+        <button
+          type="button"
+          onClick={handleToggleMute}
+          className={`pointer-events-auto px-3 py-2 rounded-full backdrop-blur-md shadow-md border flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer active:scale-95 ${
+            isMuted
+              ? 'bg-rose-50 border-rose-200 text-rose-700'
+              : 'bg-white/95 border-neutral-200/80 text-emerald-700'
+          }`}
+          title={isMuted ? 'Unmute alert tone' : 'Mute alert tone'}
+        >
+          {isMuted ? (
+            <>
+              <VolumeX className="w-4 h-4 text-rose-600" />
+              <span>Muted</span>
+            </>
+          ) : (
+            <>
+              <Volume2 className="w-4 h-4 text-emerald-600 animate-pulse" />
+              <span>Alert Tone ON</span>
+            </>
+          )}
+        </button>
+      </div>
 
       {/* Map Area - Fills upper portion of full screen */}
       <div className="relative w-full flex-1 min-h-[220px] bg-neutral-100 border-b border-neutral-200/70">
@@ -180,7 +239,7 @@ export const DeliveryRequestModal: React.FC<DeliveryRequestModalProps> = ({
         <div className="pt-0.5 pb-1">
           <button
             type="button"
-            onClick={() => onStartOrder(task)}
+            onClick={handleStart}
             className="w-full py-3.5 px-6 rounded-2xl bg-[#009DE0] hover:bg-[#0082BD] active:bg-[#0074A8] text-white font-black text-base shadow-md active:scale-[0.99] transition cursor-pointer flex items-center justify-center gap-2 tracking-wide"
           >
             <span>Start order</span>
