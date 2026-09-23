@@ -1,12 +1,11 @@
 /**
- * Audio Notification Service (Swiggy / Zomato style dispatch order chime & alert tones)
+ * Audio Notification Service (Swiggy / Zomato / Zepto style dispatch order notification tone)
  * Uses Web Audio API for zero-latency, offline-capable synthesized acoustics.
- * Notification sounds are mandatory and always active for operational dispatch alerts.
+ * Plays crisp, single-shot operational notification chimes when new orders arrive.
  */
 
 class AudioNotificationService {
   private audioCtx: AudioContext | null = null;
-  private alertIntervalId: number | null = null;
   private volume: number = 0.85;
 
   constructor() {
@@ -62,16 +61,16 @@ class AudioNotificationService {
       osc.type = type;
       osc.frequency.setValueAtTime(freq, startTime);
 
-      // Slight pitch drop for punchy dispatch acoustic
+      // Slight frequency ramp for organic chime resonance
       osc.frequency.exponentialRampToValueAtTime(
-        Math.max(40, freq * 0.96),
+        Math.max(40, freq * 0.98),
         startTime + duration
       );
 
-      // ADSR envelope
+      // Smooth attack and clean exponential decay
       const effGain = peakGain * this.volume;
       gain.gain.setValueAtTime(0.0001, startTime);
-      gain.gain.linearRampToValueAtTime(effGain, startTime + 0.015);
+      gain.gain.linearRampToValueAtTime(effGain, startTime + 0.012);
       gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
 
       osc.connect(gain);
@@ -85,7 +84,7 @@ class AudioNotificationService {
   }
 
   /**
-   * Swiggy/Zomato style signature energetic Dispatch Ringtone (Ascending chime + double accent)
+   * Swiggy/Zomato/Zepto style signature dispatch order chime (Plays once per order, clean & non-repeating)
    */
   public playNewOrderTone(): void {
     const ctx = this.getAudioContext();
@@ -94,53 +93,23 @@ class AudioNotificationService {
     try {
       const now = ctx.currentTime;
 
-      // Note frequencies (C Major / E Major bright pentatonic bell pattern)
-      const notes = [
-        { freq: 659.25, time: 0.00, dur: 0.18, type: 'triangle' as OscillatorType },
-        { freq: 830.61, time: 0.11, dur: 0.18, type: 'triangle' as OscillatorType },
-        { freq: 987.77, time: 0.22, dur: 0.22, type: 'sine' as OscillatorType },
-        { freq: 1318.51, time: 0.35, dur: 0.38, type: 'sine' as OscillatorType },
-        // Secondary energetic double ping
-        { freq: 987.77, time: 0.58, dur: 0.16, type: 'triangle' as OscillatorType },
-        { freq: 1318.51, time: 0.70, dur: 0.45, type: 'sine' as OscillatorType },
-      ];
+      // Clean, bright, energetic 4-note ascending chord chime (~0.65s total)
+      // D5 (587.33Hz) -> F#5 (739.99Hz) -> A5 (880.00Hz) -> D6 (1174.66Hz)
+      this.playTone(587.33, now + 0.00, 0.20, 'triangle', 0.40);
+      this.playTone(739.99, now + 0.10, 0.22, 'triangle', 0.42);
+      this.playTone(880.00, now + 0.20, 0.26, 'sine', 0.45);
+      this.playTone(1174.66, now + 0.32, 0.45, 'sine', 0.50);
 
-      notes.forEach((n) => {
-        this.playTone(n.freq, now + n.time, n.dur, n.type, 0.45);
-      });
-
-      // Synchronized mobile haptic vibration
+      // Synchronized single mobile haptic pulse
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         try {
-          navigator.vibrate([180, 80, 180, 80, 320]);
+          navigator.vibrate([180, 80, 240]);
         } catch {
           // Ignore vibration errors
         }
       }
     } catch {
       // Safe fallback
-    }
-  }
-
-  /**
-   * Starts looping the high-priority dispatch ringtone every 2.2 seconds (while incoming order modal is open)
-   */
-  public startOrderAlertLoop(): void {
-    this.stopOrderAlertLoop();
-    this.playNewOrderTone();
-
-    this.alertIntervalId = window.setInterval(() => {
-      this.playNewOrderTone();
-    }, 2200);
-  }
-
-  /**
-   * Stops the incoming order dispatch ringtone loop
-   */
-  public stopOrderAlertLoop(): void {
-    if (this.alertIntervalId !== null) {
-      clearInterval(this.alertIntervalId);
-      this.alertIntervalId = null;
     }
   }
 
@@ -153,10 +122,10 @@ class AudioNotificationService {
 
     try {
       const now = ctx.currentTime;
-      this.playTone(523.25, now, 0.2, 'triangle', 0.28);
-      this.playTone(659.25, now + 0.1, 0.2, 'triangle', 0.32);
-      this.playTone(783.99, now + 0.2, 0.25, 'sine', 0.36);
-      this.playTone(1046.5, now + 0.3, 0.5, 'sine', 0.42);
+      this.playTone(523.25, now, 0.18, 'triangle', 0.28);
+      this.playTone(659.25, now + 0.08, 0.20, 'triangle', 0.32);
+      this.playTone(783.99, now + 0.16, 0.24, 'sine', 0.36);
+      this.playTone(1046.5, now + 0.26, 0.45, 'sine', 0.42);
 
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         try {

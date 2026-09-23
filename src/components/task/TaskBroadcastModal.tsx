@@ -22,24 +22,17 @@ export const TaskBroadcastModal: React.FC<TaskBroadcastModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      audioNotificationService.startOrderAlertLoop();
-    } else {
-      audioNotificationService.stopOrderAlertLoop();
+      audioNotificationService.playNewOrderTone();
     }
-    return () => {
-      audioNotificationService.stopOrderAlertLoop();
-    };
   }, [isOpen, task.id]);
 
   const handleAccept = () => {
-    audioNotificationService.stopOrderAlertLoop();
     audioNotificationService.playActionBeep();
     acceptBroadcastTask(task.id);
     onClose();
   };
 
   const handleReject = () => {
-    audioNotificationService.stopOrderAlertLoop();
     onClose();
   };
 

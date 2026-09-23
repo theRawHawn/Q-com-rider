@@ -21,27 +21,19 @@ export const DeliveryRequestModal: React.FC<DeliveryRequestModalProps> = ({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
 
-  // Trigger continuous Swiggy/Zomato style dispatch order chime loop while request is open
+  // Play crisp single-shot notification sound when order modal opens
   useEffect(() => {
     if (isOpen) {
-      audioNotificationService.startOrderAlertLoop();
-    } else {
-      audioNotificationService.stopOrderAlertLoop();
+      audioNotificationService.playNewOrderTone();
     }
-
-    return () => {
-      audioNotificationService.stopOrderAlertLoop();
-    };
   }, [isOpen, task.id]);
 
   const handleStart = () => {
-    audioNotificationService.stopOrderAlertLoop();
     audioNotificationService.playActionBeep();
     onStartOrder(task);
   };
 
   const handleDismiss = () => {
-    audioNotificationService.stopOrderAlertLoop();
     onClose();
   };
 
