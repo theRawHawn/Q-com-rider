@@ -1,16 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import {
-  Zap,
-  Clock,
-  Navigation,
-  Package,
-  MapPin,
-  X,
-  Building2,
-  ShieldCheck,
-  Flame,
-} from 'lucide-react';
+import { X, ArrowRight } from 'lucide-react';
 import { DeliveryTask } from '../../types/delivery';
 import { createHubIcon, createDestinationIcon, createRiderIcon } from '../navigation/InteractiveMap';
 
@@ -30,7 +20,7 @@ export const DeliveryRequestModal: React.FC<DeliveryRequestModalProps> = ({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
 
-  // Initialize Leaflet mini route map for the request modal
+  // Initialize Leaflet mini route map for the request view
   useEffect(() => {
     if (!isOpen || !mapContainerRef.current) return;
 
@@ -92,11 +82,11 @@ export const DeliveryRequestModal: React.FC<DeliveryRequestModalProps> = ({
     }).addTo(map);
 
     const bounds = L.latLngBounds([riderCoord, storeCoord, dropCoord]);
-    map.fitBounds(bounds, { padding: [35, 35] });
+    map.fitBounds(bounds, { padding: [40, 40] });
 
     mapInstanceRef.current = map;
 
-    // Trigger invalidateSize to ensure clean rendering in modal
+    // Trigger invalidateSize to ensure clean rendering
     const timer = setTimeout(() => {
       map.invalidateSize();
     }, 200);
@@ -113,82 +103,89 @@ export const DeliveryRequestModal: React.FC<DeliveryRequestModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto border border-neutral-200/90">
-        {/* Top Right Urgent / Category Badge */}
-        <div className="absolute top-3.5 right-3.5 z-30">
-          <div className="px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-neutral-200/90 shadow-sm flex items-center gap-1.5 text-xs font-bold text-neutral-800">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Assigned Order</span>
+    <div className="fixed inset-0 z-50 bg-white flex flex-col justify-between overflow-hidden animate-in fade-in duration-150 max-w-md mx-auto w-full h-full shadow-2xl">
+      {/* Sleek Floating Dismiss Button in Top-Left */}
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-4 left-4 z-30 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-neutral-200/80 flex items-center justify-center text-neutral-700 hover:text-neutral-950 transition-colors cursor-pointer active:scale-95"
+        title="Dismiss"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
+      {/* Map Area - Fills upper portion of full screen */}
+      <div className="relative w-full flex-1 min-h-[220px] bg-neutral-100 border-b border-neutral-200/70">
+        <div ref={mapContainerRef} className="absolute inset-0 w-full h-full z-10" />
+      </div>
+
+      {/* Bottom Full-Width Operations Card */}
+      <div className="bg-white p-4 sm:p-5 space-y-3.5 text-neutral-900 border-t border-neutral-200/70 shadow-lg shrink-0">
+        {/* Estimated Earning Title & Large Payout Display */}
+        <div className="text-center pt-0.5">
+          <span className="text-xs font-semibold text-neutral-500 tracking-wide block uppercase">
+            Estimated Earning
+          </span>
+          <div className="text-4xl sm:text-5xl font-black text-neutral-900 tracking-tight my-0.5">
+            ₹{task.payoutBreakdown.totalPayout}
           </div>
         </div>
 
-        {/* Map Header Canvas Area */}
-        <div className="relative w-full h-[200px] sm:h-[220px] bg-neutral-100 shrink-0 border-b border-neutral-200/80">
-          <div ref={mapContainerRef} className="absolute inset-0 w-full h-full z-10" />
+        {/* Time & Distance Row */}
+        <div className="text-center text-xs font-bold text-neutral-700 pb-2 border-b border-neutral-100 flex items-center justify-center gap-3">
+          <span>Time: {task.route.formattedEta}</span>
+          <span className="text-neutral-300">|</span>
+          <span>Distance: {task.route.distanceKm} kms</span>
         </div>
 
-        {/* Bottom Details Sheet */}
-        <div className="p-4 sm:p-5 space-y-3 bg-white text-neutral-900">
-          {/* Estimated Earning Title & Large Payout Display */}
-          <div className="text-center pt-0.5">
-            <span className="text-xs font-semibold text-neutral-500 tracking-wide block">
-              Estimated Earning
-            </span>
-            <div className="text-4xl sm:text-5xl font-black text-neutral-900 tracking-tight my-0.5">
-              ₹{task.payoutBreakdown.totalPayout}
+        {/* Unified Sleek Professional Route Timeline Card (Compact, Cool & Clean) */}
+        <div className="p-3.5 bg-neutral-50/90 rounded-2xl border border-neutral-200/70 space-y-2.5">
+          {/* Pickup Point */}
+          <div className="flex items-start gap-3">
+            <div className="flex flex-col items-center mt-1">
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 ring-3 ring-emerald-100 shrink-0" />
+              <div className="w-0.5 h-6 bg-neutral-300/80 my-0.5" />
             </div>
-          </div>
-
-          {/* Time & Distance Row */}
-          <div className="text-center text-xs sm:text-sm font-bold text-neutral-700 pb-2 border-b border-neutral-100 flex items-center justify-center gap-3">
-            <span>Time: {task.route.formattedEta}</span>
-            <span className="text-neutral-300">|</span>
-            <span>Distance: {task.route.distanceKm} kms</span>
-          </div>
-
-          {/* Pickup Hardware & Auto Spares Detail */}
-          <div className="p-3 bg-neutral-50 rounded-2xl border border-neutral-200/80 space-y-1">
-            <div className="flex items-center gap-2 text-xs font-bold text-neutral-600">
-              <span className="text-sm">📦</span>
-              <span className="uppercase text-[11px] tracking-wider text-neutral-500 font-extrabold">
-                Pickup Hardware / Auto Spares
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md inline-block">
+                Pickup
               </span>
+              <p className="font-extrabold text-neutral-900 text-xs sm:text-sm truncate mt-0.5 leading-snug">
+                {task.pickup.storeName}
+              </p>
+              <p className="text-[11px] text-neutral-500 truncate">
+                {task.pickup.address}
+              </p>
             </div>
-            <p className="font-extrabold text-neutral-900 text-sm pl-6 leading-tight">
-              {task.pickup.storeName}
-            </p>
-            <p className="text-[11px] text-neutral-500 pl-6 truncate">
-              {task.pickup.address}
-            </p>
           </div>
 
-          {/* Dropoff Destination Detail */}
-          <div className="p-3 bg-neutral-50 rounded-2xl border border-neutral-200/80 space-y-1">
-            <div className="flex items-center gap-2 text-xs font-bold text-neutral-600">
-              <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span className="uppercase text-[11px] tracking-wider text-neutral-500 font-extrabold">
-                Dropoff Jobsite / Customer
+          {/* Drop Point */}
+          <div className="flex items-start gap-3">
+            <div className="w-2.5 h-2.5 rounded-full bg-neutral-900 ring-3 ring-neutral-200 shrink-0 mt-1" />
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-neutral-800 bg-neutral-200/80 px-2 py-0.5 rounded-md inline-block">
+                Drop
               </span>
+              <p className="font-extrabold text-neutral-900 text-xs sm:text-sm truncate mt-0.5 leading-snug">
+                {task.drop.customerName}
+              </p>
+              <p className="text-[11px] text-neutral-500 truncate">
+                {task.drop.address}
+              </p>
             </div>
-            <p className="font-extrabold text-neutral-900 text-sm pl-6 leading-tight">
-              {task.drop.customerName}
-            </p>
-            <p className="text-[11px] text-neutral-500 pl-6 truncate">
-              {task.drop.address}
-            </p>
           </div>
+        </div>
 
-          {/* Primary Action Button: "Start order" */}
-          <div className="pt-1">
-            <button
-              type="button"
-              onClick={() => onStartOrder(task)}
-              className="w-full py-3.5 px-6 rounded-2xl bg-[#f25100] hover:bg-[#d94800] text-white font-black text-base shadow-md active:scale-[0.99] transition cursor-pointer flex items-center justify-center gap-2 tracking-wide"
-            >
-              <span>Start order</span>
-            </button>
-          </div>
+        {/* Primary Action Button: "Start order" */}
+        <div className="pt-0.5 pb-1">
+          <button
+            type="button"
+            onClick={() => onStartOrder(task)}
+            className="w-full py-3.5 px-6 rounded-2xl bg-[#f25100] hover:bg-[#d94800] text-white font-black text-base shadow-md active:scale-[0.99] transition cursor-pointer flex items-center justify-center gap-2 tracking-wide"
+          >
+            <span>Start order</span>
+            <ArrowRight className="w-4 h-4 text-white/90" />
+          </button>
         </div>
       </div>
     </div>
