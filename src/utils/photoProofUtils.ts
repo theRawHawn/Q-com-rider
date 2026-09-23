@@ -167,7 +167,8 @@ export function stampWatermarkOnImage(
  */
 export function generateSampleParcelImage(
   orderNumber: string,
-  stage: 'PICKUP' | 'DELIVERY'
+  stage: 'PICKUP' | 'DELIVERY',
+  photoIndex: number = 1
 ): string {
   const canvas = document.createElement('canvas');
   canvas.width = 800;
@@ -232,7 +233,7 @@ export function generateSampleParcelImage(
 
   ctx.fillStyle = '#64748b';
   ctx.font = '11px ui-sans-serif, system-ui, sans-serif';
-  ctx.fillText('QUICK COMMERCE SEALED PARCEL', 280, 325);
+  ctx.fillText(`ANGLE ${photoIndex}: SEAL & PARCEL VERIFICATION`, 280, 325);
   ctx.fillText(stage === 'PICKUP' ? 'STORE HANDOVER VERIFIED' : 'CUSTOMER DROP PROOF', 280, 345);
 
   // Simulated Barcode lines

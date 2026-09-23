@@ -154,6 +154,7 @@ export interface RouteInfo {
 export interface ProofOfHandover {
   id: string;
   photoUrl: string;
+  photoUrls?: string[];
   timestamp: string;
   stage: 'PICKUP' | 'DELIVERY';
   coordinates: Coordinates;
