@@ -574,22 +574,24 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
 
               <Button
                 variant="brand"
-                size="lg"
+                size="md"
                 fullWidth
                 disabled={!hasDeliveryPhoto}
                 onClick={() => setIsOtpModalOpen(true)}
                 icon={
                   hasDeliveryPhoto ? (
-                    <KeyRound className="w-4 h-4" />
+                    <KeyRound className="w-4 h-4 shrink-0" />
                   ) : (
-                    <Lock className="w-4 h-4" />
+                    <Lock className="w-4 h-4 shrink-0" />
                   )
                 }
-                className="font-bold py-3.5"
+                className="h-12 rounded-2xl font-black text-sm sm:text-base tracking-wide flex items-center justify-center gap-2 shadow-xs cursor-pointer"
               >
-                {hasDeliveryPhoto
-                  ? 'Enter Delivery OTP & Complete'
-                  : 'Take Photo First to Enter OTP'}
+                <span className="truncate">
+                  {hasDeliveryPhoto
+                    ? 'Enter Delivery OTP & Complete'
+                    : 'Take Photo First to Enter OTP'}
+                </span>
               </Button>
             </div>
 
