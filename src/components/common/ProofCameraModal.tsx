@@ -278,16 +278,8 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-xs animate-in fade-in duration-200">
       {/* Mobile-First Zero-Scroll Full Viewport Container */}
       <div className="w-full max-w-md h-full sm:h-[620px] max-h-[100dvh] sm:max-h-[92vh] bg-neutral-900 text-white rounded-none sm:rounded-2xl shadow-2xl border-0 sm:border border-neutral-800 flex flex-col justify-between overflow-hidden">
-        {/* Compact Header (No scroll) */}
-        <div className="px-4 py-3 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between shrink-0">
-          <div>
-            <h3 className="text-sm font-bold text-white tracking-tight">
-              {stage === 'PICKUP' ? 'Store Pickup Photo Proof' : 'Customer Delivery Photo Proof'}
-            </h3>
-            <p className="text-[11px] text-neutral-400">
-              Order {cleanOrderNumber} · {photos.length}/3 Photos {photos.length < 2 ? '(Min. 2 required)' : '(Ready)'}
-            </p>
-          </div>
+        {/* Top Bar with Close Button */}
+        <div className="px-3 py-2 bg-neutral-900 border-b border-neutral-800 flex items-center justify-end shrink-0">
           <button
             type="button"
             onClick={onClose}
