@@ -243,17 +243,24 @@ export const HomeOverview: React.FC<HomeOverviewProps> = ({ onNavigateTab }) => 
       {/* State D: Active Delivery Card (When in transit / assigned) */}
       {activeTask && (
         <div className="p-5 rounded-3xl bg-white border-2 border-[#009DE0]/40 shadow-sm space-y-3.5">
-          <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-            <div className="flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full ${partner.isOnline ? 'bg-[#009DE0] animate-pulse' : 'bg-amber-500'}`} />
-              <span className="text-xs font-black uppercase text-[#009DE0] tracking-wider">
-                ACTIVE DELIVERY
-              </span>
-              <span className="text-xs font-bold text-neutral-900">{activeTask.orderNumber}</span>
+          <div className="flex items-center justify-between gap-3 border-b border-neutral-100 pb-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full shrink-0 ${partner.isOnline ? 'bg-[#009DE0] animate-pulse' : 'bg-amber-500'}`} />
+                <span className="text-[10px] font-black uppercase text-[#009DE0] tracking-wider whitespace-nowrap">
+                  ACTIVE DELIVERY
+                </span>
+              </div>
+              <p className="text-sm font-bold text-neutral-900 font-mono tracking-tight mt-0.5 truncate">
+                {activeTask.orderNumber}
+              </p>
             </div>
-            <span className="text-xs font-semibold text-neutral-500 bg-neutral-100 px-2.5 py-1 rounded-xl border border-neutral-200">
-              {activeTask.estimatedDeliveryAt}
-            </span>
+            <div className="shrink-0 text-right">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full border border-neutral-200/80 whitespace-nowrap">
+                <Clock className="w-3 h-3 text-neutral-400 shrink-0" />
+                {activeTask.estimatedDeliveryAt}
+              </span>
+            </div>
           </div>
 
           {/* Duty status toggle on active card */}
