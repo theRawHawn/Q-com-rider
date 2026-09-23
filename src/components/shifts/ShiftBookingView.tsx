@@ -7,6 +7,10 @@ import {
   AlertCircle,
   Lock,
   CheckCircle2,
+  Flame,
+  Zap,
+  TrendingUp,
+  Sparkles,
 } from 'lucide-react';
 import { ShiftSlot } from '../../types/delivery';
 import { shiftBookingService } from '../../services/shiftBookingService';
@@ -25,7 +29,7 @@ export const ShiftBookingView: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(weekDays[0]?.dateStr || '2026-09-22');
   const [selectedHub, setSelectedHub] = useState<string>('ALL');
   const [slots, setSlots] = useState<ShiftSlot[]>([]);
-  const [filterType, setFilterType] = useState<'ALL' | 'BOOKED' | 'AVAILABLE'>('ALL');
+  const [filterType, setFilterType] = useState<'ALL' | 'AVAILABLE' | 'BOOKED'>('ALL');
 
   const loadSlots = () => {
     const list = shiftBookingService.getShiftSlots(selectedDate, selectedHub);
@@ -66,31 +70,31 @@ export const ShiftBookingView: React.FC = () => {
 
   return (
     <div className="space-y-3 pb-8">
-      {/* Sleek Operational Header */}
+      {/* Swiggy/Zomato Style Gigs Header */}
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-base sm:text-lg font-black text-neutral-900 tracking-tight">
-              Shift Booking
+              Book Gigs
             </h1>
             <Badge variant="brand" size="sm">
               {partner.tierLevel}
             </Badge>
           </div>
           <p className="text-[11px] text-neutral-500 font-medium">
-            3-hour operational delivery slots with minimum pay guarantees
+            High-demand delivery slots with guaranteed pay & peak surge
           </p>
         </div>
 
         <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white border border-neutral-200/80 shadow-2xs text-xs">
           <Calendar className="w-3.5 h-3.5 text-[#009DE0]" />
           <span className="font-bold text-neutral-800">
-            {bookedCountTotal} {bookedCountTotal === 1 ? 'Slot' : 'Slots'} Booked
+            {bookedCountTotal} {bookedCountTotal === 1 ? 'Gig' : 'Gigs'} Booked
           </span>
         </div>
       </div>
 
-      {/* Redesigned Compact Date Rail */}
+      {/* Redesigned Compact 7-Day Horizon Date Rail */}
       <div className="bg-white p-2 sm:p-2.5 rounded-2xl border border-neutral-200/80 shadow-2xs">
         <div className="grid grid-cols-7 gap-1">
           {weekDays.map((d) => {
@@ -130,9 +134,9 @@ export const ShiftBookingView: React.FC = () => {
         </div>
       </div>
 
-      {/* Hub & Filter Bar */}
+      {/* Cluster & Filter Rail */}
       <div className="flex items-center justify-between gap-2">
-        {/* Hub Selector */}
+        {/* Hub / Cluster Selector */}
         <div className="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-neutral-200/80 shadow-2xs flex-1 max-w-xs">
           <MapPin className="w-3.5 h-3.5 text-[#009DE0] shrink-0" />
           <select
@@ -160,20 +164,20 @@ export const ShiftBookingView: React.FC = () => {
                   : 'text-neutral-500 hover:text-neutral-800'
               }`}
             >
-              {type === 'ALL' ? 'All' : type === 'AVAILABLE' ? 'Open' : 'Booked'}
+              {type === 'ALL' ? 'All Gigs' : type === 'AVAILABLE' ? 'Open' : 'My Gigs'}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Shift Slots List */}
-      <div className="space-y-2.5">
+      {/* Swiggy/Zomato Signature Gigs List */}
+      <div className="space-y-3">
         {filteredSlots.length === 0 ? (
           <div className="bg-white p-6 rounded-2xl border border-neutral-200/80 text-center space-y-1.5 shadow-2xs">
             <AlertCircle className="w-6 h-6 text-neutral-400 mx-auto" />
-            <h3 className="text-xs font-bold text-neutral-800">No Shifts Available</h3>
+            <h3 className="text-xs font-bold text-neutral-800">No Gigs Available</h3>
             <p className="text-[11px] text-neutral-500 max-w-xs mx-auto">
-              No shift slots found for the selected filter or hub zone.
+              No gig slots found for the selected filter or cluster.
             </p>
           </div>
         ) : (
@@ -181,32 +185,38 @@ export const ShiftBookingView: React.FC = () => {
             const isBooked = slot.status === 'BOOKED';
             const isFilled = slot.status === 'FILLED';
             const isLocked = slot.status === 'LOCKED';
-            const capacityRatio = slot.bookedCount / slot.capacityLimit;
+            const spotsRemaining = Math.max(0, slot.capacityLimit - slot.bookedCount);
+            const isHighSurge = (slot.spotSurgeMultiplier || 1) >= 1.3;
 
             return (
               <div
                 key={slot.id}
-                className={`bg-white rounded-2xl border p-3.5 transition-all shadow-2xs ${
+                className={`bg-white rounded-2xl border p-4 transition-all shadow-2xs ${
                   isBooked
-                    ? 'border-emerald-400/80 ring-1 ring-emerald-400/20 bg-emerald-50/15'
+                    ? 'border-emerald-400 ring-1 ring-emerald-400/20 bg-emerald-50/15'
                     : 'border-neutral-200/80 hover:border-neutral-300'
                 }`}
               >
+                {/* Header: Time Slot, Gig Tag, and Status */}
                 <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-neutral-100">
-                  <div>
+                  <div className="space-y-0.5">
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-[#009DE0]" />
                       <span className="text-xs font-black text-neutral-900">
                         {slot.startTime} – {slot.endTime}
                       </span>
-                      <span className="text-[10px] text-neutral-400 font-medium">({slot.shiftName})</span>
+                      {isHighSurge && (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200">
+                          <Flame className="w-3 h-3 text-amber-500 fill-amber-500" />
+                          {slot.spotSurgeMultiplier}x Surge
+                        </span>
+                      )}
                     </div>
-                    <span className="text-[11px] text-neutral-500 font-medium block mt-0.5">
-                      {slot.zoneName}
+                    <span className="text-[11px] font-bold text-neutral-700 block">
+                      {slot.shiftName}
                     </span>
                   </div>
 
-                  {/* Status Badge */}
                   <div>
                     {isBooked ? (
                       <Badge variant="emerald" size="sm" dot>
@@ -214,59 +224,56 @@ export const ShiftBookingView: React.FC = () => {
                       </Badge>
                     ) : isFilled ? (
                       <Badge variant="neutral" size="sm">
-                        Full
+                        Gig Full
                       </Badge>
                     ) : isLocked ? (
                       <Badge variant="amber" size="sm">
                         <Lock className="w-3 h-3 inline mr-1" />
                         {slot.tierAccessRequired} Only
                       </Badge>
+                    ) : spotsRemaining <= 15 ? (
+                      <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                        {spotsRemaining} spots left
+                      </span>
                     ) : (
                       <Badge variant="brand" size="sm">
-                        Open
+                        Fast Filling
                       </Badge>
                     )}
                   </div>
                 </div>
 
-                {/* Key Metrics: Guarantee & Capacity */}
-                <div className="flex items-center justify-between py-2 text-xs">
+                {/* Earnings & Incentive Details */}
+                <div className="py-2.5 flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-neutral-400 font-medium block">
-                      Min Guarantee
+                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+                      Guaranteed Minimum Earning
                     </span>
-                    <span className="text-xs sm:text-sm font-black text-neutral-900">
-                      ₹{slot.minEarningsGuarantee}
-                    </span>
-                  </div>
-
-                  <div className="text-right w-36">
-                    <div className="flex items-center justify-between text-[10px] font-semibold text-neutral-500 mb-1">
-                      <span>Capacity</span>
-                      <span className="text-neutral-800 font-mono font-bold">
-                        {slot.bookedCount}/{slot.capacityLimit}
+                    <div className="flex items-baseline gap-1.5 mt-0.5">
+                      <span className="text-lg font-black text-neutral-900">
+                        ₹{slot.minEarningsGuarantee}
+                      </span>
+                      <span className="text-[11px] text-emerald-600 font-bold">
+                        + Peak Incentives
                       </span>
                     </div>
-                    <div className="w-full bg-neutral-100 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-300 ${
-                          capacityRatio >= 0.95
-                            ? 'bg-rose-500'
-                            : capacityRatio >= 0.75
-                            ? 'bg-amber-500'
-                            : 'bg-emerald-500'
-                        }`}
-                        style={{ width: `${Math.min(100, capacityRatio * 100)}%` }}
-                      />
-                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-[10px] text-neutral-400 font-medium block">
+                      Delivery Cluster
+                    </span>
+                    <span className="text-xs font-bold text-neutral-700 block mt-0.5 truncate max-w-[140px]">
+                      {slot.zoneName.replace(' Cluster', '').replace(' Zone', '')}
+                    </span>
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="pt-2 flex items-center justify-between gap-2 border-t border-neutral-100">
-                  <div className="flex items-center gap-1 text-[10px] text-neutral-400 font-medium">
-                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                    <span>Instant wallet guarantee</span>
+                {/* Bottom Action Strip */}
+                <div className="pt-2.5 border-t border-neutral-100 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-1.5 text-[10px] text-neutral-500 font-medium">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Min order guarantee active</span>
                   </div>
 
                   {isBooked ? (
@@ -274,16 +281,16 @@ export const ShiftBookingView: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleCancelSlot(slot)}
-                      className="h-8 px-3 rounded-xl text-xs text-rose-600 hover:bg-rose-50 border-rose-200 font-bold"
+                      className="h-8.5 px-3.5 rounded-xl text-xs text-rose-600 hover:bg-rose-50 border-rose-200 font-bold cursor-pointer"
                     >
-                      Cancel
+                      Cancel Gig
                     </Button>
                   ) : isFilled ? (
-                    <Button variant="secondary" size="sm" disabled className="h-8 px-3 rounded-xl text-xs opacity-60">
-                      Full
+                    <Button variant="secondary" size="sm" disabled className="h-8.5 px-3.5 rounded-xl text-xs opacity-60">
+                      Gig Full
                     </Button>
                   ) : isLocked ? (
-                    <Button variant="secondary" size="sm" disabled className="h-8 px-3 rounded-xl text-xs opacity-60">
+                    <Button variant="secondary" size="sm" disabled className="h-8.5 px-3.5 rounded-xl text-xs opacity-60">
                       Locked
                     </Button>
                   ) : (
@@ -291,9 +298,10 @@ export const ShiftBookingView: React.FC = () => {
                       variant="brand"
                       size="sm"
                       onClick={() => handleBookSlot(slot)}
-                      className="h-8 px-4 rounded-xl text-xs font-bold"
+                      icon={<Zap className="w-3.5 h-3.5" />}
+                      className="h-8.5 px-4 rounded-xl text-xs font-black cursor-pointer shadow-xs"
                     >
-                      Book Slot
+                      Book Gig
                     </Button>
                   )}
                 </div>
