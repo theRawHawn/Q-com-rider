@@ -13,8 +13,6 @@ import {
   Gift,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
-  ChevronUp,
 } from 'lucide-react';
 import { earningsService } from '../../services/earningsService';
 import { Button } from '../common/Button';
@@ -35,7 +33,6 @@ export const EarningsView: React.FC = () => {
   const [selectedFilter, setSelectedFilter] = useState<PeriodFilter>('daily');
   const [periodOffset, setPeriodOffset] = useState<number>(0);
   const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
-  const [isOrderEarningExpanded, setIsOrderEarningExpanded] = useState(true);
 
   const refreshEarnings = () => {
     setSummary({ ...earningsService.getSummary() });
@@ -496,44 +493,14 @@ export const EarningsView: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. Reference Cards 3: Accordion Breakdown Cards */}
+      {/* 4. Reference Cards 3: Earnings Breakdown Cards */}
       <div className="space-y-2.5">
-        {/* Order Earning (Expandable) */}
-        <div className="rounded-2xl bg-white border border-neutral-200/80 shadow-2xs overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setIsOrderEarningExpanded(!isOrderEarningExpanded)}
-            className="w-full p-4 flex items-center justify-between text-left cursor-pointer hover:bg-neutral-50/50 transition"
-          >
-            <span className="text-sm font-bold text-neutral-900">Order earning</span>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-neutral-900">
-                ₹{periodData.basePay.toLocaleString(undefined, { minimumFractionDigits: selectedFilter === 'weekly' ? 2 : 0, maximumFractionDigits: 2 })}
-              </span>
-              {isOrderEarningExpanded ? (
-                <ChevronUp className="w-4 h-4 text-neutral-500" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-neutral-500" />
-              )}
-            </div>
-          </button>
-
-          {isOrderEarningExpanded && (
-            <div className="px-4 pb-3.5 pt-1 space-y-2 border-t border-neutral-100 text-xs text-neutral-600 bg-neutral-50/40">
-              <div className="flex justify-between">
-                <span>Base trip pay ({periodData.trips} orders)</span>
-                <span className="font-semibold text-neutral-900">
-                  ₹{Math.round(periodData.basePay * 0.7).toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Distance & Transit time pay</span>
-                <span className="font-semibold text-neutral-900">
-                  ₹{Math.round(periodData.basePay * 0.3).toLocaleString()}
-                </span>
-              </div>
-            </div>
-          )}
+        {/* Order earning (Single whole amount) */}
+        <div className="p-4 rounded-2xl bg-white border border-neutral-200/80 shadow-2xs flex items-center justify-between text-left">
+          <span className="text-sm font-bold text-neutral-900">Order earning</span>
+          <span className="text-sm font-bold text-neutral-900">
+            ₹{periodData.basePay.toLocaleString(undefined, { minimumFractionDigits: selectedFilter === 'weekly' ? 2 : 0, maximumFractionDigits: 2 })}
+          </span>
         </div>
 
         {/* Incentive */}
