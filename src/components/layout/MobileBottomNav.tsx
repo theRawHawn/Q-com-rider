@@ -25,7 +25,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     },
     {
       id: 'shifts' as NavTab,
-      label: 'Shifts',
+      label: 'Gigs',
       icon: <Calendar className="w-5 h-5" />,
       action: () => onChangeTab('shifts'),
     },

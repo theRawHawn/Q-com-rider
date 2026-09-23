@@ -1,12 +1,12 @@
 /**
- * QCOM Shift Booking & Capacity Service
- * Manages 7-day horizon gig shifts, tiered access windows, and capacity limits.
+ * QCOM Gig & Shift Booking Service (Swiggy / Zomato Delivery Partner Model)
+ * Manages 7-day horizon delivery gigs, peak windows, and surge multipliers.
  */
 
 import { ShiftSlot, PartnerTier } from '../types/delivery';
 import { INITIAL_SHIFT_SLOTS } from './mockData';
 
-const SHIFT_STORAGE_KEY = 'qcom_shift_slots_state_v4';
+const SHIFT_STORAGE_KEY = 'qcom_gigs_slots_v5';
 
 class ShiftBookingService {
   private slots: ShiftSlot[] = [];
@@ -23,7 +23,7 @@ class ShiftBookingService {
         return;
       }
     } catch (e) {
-      console.warn('Could not read stored shift slots', e);
+      console.warn('Could not read stored gig slots', e);
     }
     this.slots = [...INITIAL_SHIFT_SLOTS];
   }
@@ -32,7 +32,7 @@ class ShiftBookingService {
     try {
       localStorage.setItem(SHIFT_STORAGE_KEY, JSON.stringify(this.slots));
     } catch (e) {
-      console.warn('Could not save shift slots', e);
+      console.warn('Could not save gig slots', e);
     }
   }
 
@@ -63,10 +63,10 @@ class ShiftBookingService {
 
   public getHubZones(): { id: string; name: string }[] {
     return [
-      { id: 'ALL', name: 'All Store Fulfillment Hubs' },
-      { id: 'HUB-INDIRANAGAR', name: 'Indiranagar Hub (East Zone)' },
-      { id: 'HUB-KORAMANGALA', name: 'Koramangala Hub (South Zone)' },
-      { id: 'HUB-HSR', name: 'HSR Layout Hub (Southeast Zone)' },
+      { id: 'ALL', name: 'All Delivery Clusters' },
+      { id: 'HUB-INDIRANAGAR', name: 'Indiranagar Central Cluster' },
+      { id: 'HUB-KORAMANGALA', name: 'Koramangala 4th Block Cluster' },
+      { id: 'HUB-HSR', name: 'HSR Layout 27th Main Cluster' },
     ];
   }
 
@@ -85,17 +85,17 @@ class ShiftBookingService {
   public bookShiftSlot(slotId: string, partnerTier: PartnerTier = 'PLATINUM'): { success: boolean; slot?: ShiftSlot; message: string } {
     const slotIndex = this.slots.findIndex((s) => s.id === slotId);
     if (slotIndex === -1) {
-      return { success: false, message: 'Shift slot not found' };
+      return { success: false, message: 'Gig slot not found' };
     }
 
     const slot = this.slots[slotIndex];
 
     if (slot.status === 'BOOKED') {
-      return { success: false, message: 'You have already booked this shift slot' };
+      return { success: false, message: 'You have already booked this gig' };
     }
 
     if (slot.status === 'FILLED' || slot.bookedCount >= slot.capacityLimit) {
-      return { success: false, message: 'This shift slot is at maximum capacity limit' };
+      return { success: false, message: 'This gig is at maximum capacity' };
     }
 
     // Check tier access
@@ -125,19 +125,19 @@ class ShiftBookingService {
     return {
       success: true,
       slot: updatedSlot,
-      message: `Successfully confirmed ${slot.shiftName} (${slot.startTime} - ${slot.endTime})`,
+      message: `Gig confirmed! ${slot.shiftName} (${slot.startTime} - ${slot.endTime})`,
     };
   }
 
   public cancelShiftBooking(slotId: string): { success: boolean; slot?: ShiftSlot; message: string } {
     const slotIndex = this.slots.findIndex((s) => s.id === slotId);
     if (slotIndex === -1) {
-      return { success: false, message: 'Shift slot not found' };
+      return { success: false, message: 'Gig not found' };
     }
 
     const slot = this.slots[slotIndex];
     if (slot.status !== 'BOOKED') {
-      return { success: false, message: 'Slot is not currently booked' };
+      return { success: false, message: 'Gig is not currently booked' };
     }
 
     const updatedSlot: ShiftSlot = {
@@ -152,12 +152,8 @@ class ShiftBookingService {
     return {
       success: true,
       slot: updatedSlot,
-      message: `Cancelled booking for ${slot.shiftName}`,
+      message: `Gig cancelled: ${slot.shiftName}`,
     };
-  }
-
-  public getBookedShifts(): ShiftSlot[] {
-    return this.slots.filter((s) => s.status === 'BOOKED');
   }
 }
 
