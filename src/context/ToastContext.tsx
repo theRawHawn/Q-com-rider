@@ -23,27 +23,29 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    }, 2200);
   }, []);
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-full max-w-sm px-4 pointer-events-none">
+      {/* Sleek Floating Top Dynamic Toast Notification - Never Blocks Navigation or Action Buttons */}
+      <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-1.5 w-full max-w-xs px-3 pointer-events-none">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto rounded-xl px-4 py-3 text-sm font-semibold shadow-lg border flex items-center justify-between transition-all duration-200 animate-in fade-in slide-in-from-bottom-2 ${
+            className={`pointer-events-auto px-4 py-2 rounded-full text-xs font-bold shadow-lg backdrop-blur-md flex items-center gap-2 border transition-all duration-200 animate-in fade-in slide-in-from-top-2 ${
               toast.type === 'success'
-                ? 'bg-white text-emerald-950 border-emerald-300 shadow-md ring-1 ring-emerald-500/20'
+                ? 'bg-neutral-900/95 text-emerald-300 border-emerald-500/30 shadow-emerald-950/20'
                 : toast.type === 'error'
-                ? 'bg-white text-rose-950 border-rose-300 shadow-md ring-1 ring-rose-500/20'
+                ? 'bg-neutral-900/95 text-rose-300 border-rose-500/30 shadow-rose-950/20'
                 : toast.type === 'warning'
-                ? 'bg-white text-amber-950 border-amber-300 shadow-md ring-1 ring-amber-500/20'
-                : 'bg-white text-neutral-900 border-neutral-300 shadow-md ring-1 ring-neutral-900/10'
+                ? 'bg-neutral-900/95 text-amber-300 border-amber-500/30 shadow-amber-950/20'
+                : 'bg-neutral-900/95 text-sky-200 border-sky-500/30 shadow-black/20'
             }`}
           >
-            <span>{toast.message}</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
+            <span className="truncate max-w-[240px]">{toast.message}</span>
           </div>
         ))}
       </div>
@@ -58,3 +60,4 @@ export const useToast = () => {
   }
   return context;
 };
+

@@ -182,7 +182,6 @@ export const ProofCameraModal: React.FC<ProofCameraModalProps> = ({
     });
 
     setPhotos((prev) => [...prev, watermarked]);
-    showToast(`Photo ${photos.length + 1} of 3 added.`, 'info');
   };
 
   // Capture current frame from live viewfinder
