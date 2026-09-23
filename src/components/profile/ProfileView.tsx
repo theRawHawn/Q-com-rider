@@ -5,7 +5,6 @@ import {
   LogOut,
   Mail,
   Volume2,
-  VolumeX,
   BellRing,
   Play,
 } from 'lucide-react';
@@ -22,14 +21,7 @@ export const ProfileView: React.FC = () => {
   const { partner, logout } = useAuth();
   const { showToast } = useToast();
   const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>('performance');
-  const [isAudioMuted, setIsAudioMuted] = useState(() => audioNotificationService.getIsMuted());
   const [volume, setVolume] = useState(() => audioNotificationService.getVolume());
-
-  const handleToggleMute = () => {
-    const muted = audioNotificationService.toggleMute();
-    setIsAudioMuted(muted);
-    showToast(muted ? 'Order alert tone muted' : 'Order alert tone enabled', 'info');
-  };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseFloat(e.target.value);
@@ -140,30 +132,13 @@ export const ProfileView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <BellRing className="w-4 h-4 text-[#009DE0]" />
                 <h3 className="text-xs font-black text-neutral-900">
-                  Order Alert Tone (Swiggy / Zomato style)
+                  Order Alert Tone (Mandatory)
                 </h3>
               </div>
-              <button
-                type="button"
-                onClick={handleToggleMute}
-                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border transition cursor-pointer flex items-center gap-1 ${
-                  isAudioMuted
-                    ? 'bg-rose-50 border-rose-200 text-rose-700'
-                    : 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                }`}
-              >
-                {isAudioMuted ? (
-                  <>
-                    <VolumeX className="w-3.5 h-3.5" />
-                    <span>Muted</span>
-                  </>
-                ) : (
-                  <>
-                    <Volume2 className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Active</span>
-                  </>
-                )}
-              </button>
+              <span className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-1">
+                <Volume2 className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+                <span>Always Active</span>
+              </span>
             </div>
 
             <p className="text-[11px] text-neutral-500">
@@ -179,12 +154,11 @@ export const ProfileView: React.FC = () => {
               </div>
               <input
                 type="range"
-                min="0.1"
+                min="0.2"
                 max="1"
                 step="0.05"
                 value={volume}
                 onChange={handleVolumeChange}
-                disabled={isAudioMuted}
                 className="w-full accent-[#009DE0] cursor-pointer"
               />
             </div>
@@ -192,8 +166,7 @@ export const ProfileView: React.FC = () => {
             <button
               type="button"
               onClick={handleTestSound}
-              disabled={isAudioMuted}
-              className="w-full py-2.5 px-3 rounded-2xl bg-[#EBF7FD] hover:bg-[#d8eefb] border border-[#009DE0]/30 text-[#009DE0] font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition active:scale-[0.99] disabled:opacity-50"
+              className="w-full py-2.5 px-3 rounded-2xl bg-[#EBF7FD] hover:bg-[#d8eefb] border border-[#009DE0]/30 text-[#009DE0] font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition active:scale-[0.99]"
             >
               <Play className="w-3.5 h-3.5 fill-[#009DE0]" />
               <span>Test Order Alert Tone</span>
