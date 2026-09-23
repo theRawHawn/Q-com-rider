@@ -11,7 +11,9 @@ import {
   Banknote,
   ShieldCheck,
   CornerUpRight,
-  Store,
+  Lock,
+  Image as ImageIcon,
+  RotateCw,
 } from 'lucide-react';
 import { useTask } from '../../context/TaskContext';
 import { Button } from '../common/Button';
@@ -88,6 +90,8 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
   const isInTransitToCustomer = activeTask.orderStatus === 'out_for_delivery';
   const isAtCustomer = activeTask.orderStatus === 'arriving';
 
+  const hasDeliveryPhoto = Boolean(activeTask.deliveryProof?.photoUrl);
+
   const handleOpenMaskedCall = (name: string, role: 'CUSTOMER' | 'SELLER' | 'DISPATCH_SUPPORT') => {
     setMaskedCallData({
       isOpen: true,
@@ -115,16 +119,12 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
     <div className="space-y-3 animate-in fade-in duration-200 pb-12">
       {/* Compact Clean Order Info Header */}
       <div className="p-3.5 rounded-2xl bg-white border border-neutral-200/80 shadow-xs flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-sm font-black text-neutral-900">
-            {activeTask.orderNumber}
-          </span>
-        </div>
-        <div className="text-right">
-          <span className="text-[11px] font-semibold text-neutral-500">
-            Est. SLA: <strong className="text-neutral-900">{activeTask.estimatedDeliveryAt}</strong>
-          </span>
-        </div>
+        <span className="font-mono text-sm font-black text-neutral-900">
+          {activeTask.orderNumber}
+        </span>
+        <span className="text-[11px] font-semibold text-neutral-500">
+          Est. SLA: <strong className="text-neutral-900">{activeTask.estimatedDeliveryAt}</strong>
+        </span>
       </div>
 
       {/* Full-view Rider Route Navigation Map */}
@@ -233,7 +233,7 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
           <div className="space-y-3.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block">
+                <span className="text-[10px] font-bold text-[#009DE0] uppercase tracking-wider block">
                   Step 2: Store Handover
                 </span>
                 <h3 className="text-base font-extrabold text-neutral-900">
@@ -434,12 +434,13 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
           </div>
         )}
 
-        {/* Step 4: At Delivery Location (OTP & Delivery Photo Verification) */}
+        {/* Step 4: At Delivery Location (Photo Proof -> Unlock OTP Verification) */}
         {isAtCustomer && (
           <div className="space-y-4">
+            {/* Header: Customer Info & Call */}
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider block">
+                <span className="text-[10px] font-bold text-[#009DE0] uppercase tracking-wider block">
                   Step 4: Delivery Verification
                 </span>
                 <h3 className="text-base font-extrabold text-neutral-900">
@@ -453,82 +454,178 @@ export const ActiveDeliveryWorkflow: React.FC = () => {
                   handleOpenMaskedCall(activeTask.drop.customerName, 'CUSTOMER')
                 }
                 icon={<Phone className="w-3.5 h-3.5 text-neutral-700" />}
-                className="text-xs"
+                className="text-xs font-bold"
               >
                 Call Customer
               </Button>
             </div>
 
-            {/* Primary Delivery Completion via Customer OTP */}
-            <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-3">
+            {/* Sub-step 1: Take Package / Doorstep Picture */}
+            <div className="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-amber-950 flex items-center gap-1.5">
-                  <KeyRound className="w-4 h-4 text-amber-700" />
-                  Ask Customer for 4-Digit OTP
-                </span>
-                <span className="text-[10px] bg-white text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-200">
-                  Required
-                </span>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs ${
+                      hasDeliveryPhoto
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-[#009DE0] text-white'
+                    }`}
+                  >
+                    {hasDeliveryPhoto ? <CheckCircle2 className="w-3.5 h-3.5" /> : '1'}
+                  </div>
+                  <span className="text-xs font-black text-neutral-900">
+                    Take Package & Doorstep Photo
+                  </span>
+                </div>
+                {hasDeliveryPhoto ? (
+                  <Badge variant="emerald" size="sm">
+                    Verified
+                  </Badge>
+                ) : (
+                  <span className="text-[10px] font-bold text-[#009DE0] bg-[#EBF7FD] px-2 py-0.5 rounded-md border border-[#009DE0]/20">
+                    Required First
+                  </span>
+                )}
               </div>
-              <p className="text-xs text-amber-900/90">
-                Enter the 4-digit code shown on customer's app to complete delivery.
+
+              {hasDeliveryPhoto ? (
+                <div className="p-3 rounded-xl bg-white border border-emerald-200 flex items-center justify-between shadow-2xs">
+                  <div className="flex items-center gap-2.5">
+                    {activeTask.deliveryProof?.photoUrl ? (
+                      <img
+                        src={activeTask.deliveryProof.photoUrl}
+                        alt="Delivery Proof"
+                        className="w-10 h-10 rounded-lg object-cover border border-neutral-200"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200">
+                        <ImageIcon className="w-5 h-5" />
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-xs font-bold text-neutral-900 block">
+                        Package Photo Captured
+                      </span>
+                      <span className="text-[10px] text-neutral-500">
+                        GPS & timestamp tagged
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenProofCamera('DELIVERY')}
+                    className="text-xs text-[#009DE0] hover:text-[#008bc7] font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <RotateCw className="w-3 h-3" />
+                    Retake
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => handleOpenProofCamera('DELIVERY')}
+                  className="w-full p-3.5 rounded-xl border-2 border-dashed border-[#009DE0] bg-[#EBF7FD]/60 hover:bg-[#EBF7FD] text-[#009DE0] flex items-center justify-center gap-2 text-xs font-extrabold shadow-2xs transition-colors cursor-pointer"
+                >
+                  <Camera className="w-4 h-4 text-[#009DE0]" />
+                  <span>Click Package Photo at Doorstep</span>
+                </button>
+              )}
+            </div>
+
+            {/* Sub-step 2: Enter Customer 4-Digit OTP (Locked until photo is taken) */}
+            <div
+              className={`p-3.5 rounded-2xl border transition-all ${
+                hasDeliveryPhoto
+                  ? 'bg-[#EBF7FD]/40 border-[#009DE0]/40'
+                  : 'bg-neutral-50/70 border-neutral-200/80 opacity-80'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs ${
+                      hasDeliveryPhoto
+                        ? 'bg-[#009DE0] text-white'
+                        : 'bg-neutral-300 text-neutral-600'
+                    }`}
+                  >
+                    {hasDeliveryPhoto ? '2' : <Lock className="w-3.5 h-3.5" />}
+                  </div>
+                  <span className="text-xs font-black text-neutral-900">
+                    Enter Customer 4-Digit OTP
+                  </span>
+                </div>
+                {hasDeliveryPhoto ? (
+                  <Badge variant="brand" size="sm">
+                    Unlocked
+                  </Badge>
+                ) : (
+                  <span className="text-[10px] font-semibold text-neutral-400">
+                    Locked
+                  </span>
+                )}
+              </div>
+
+              <p className="text-[11px] text-neutral-500 mb-3">
+                {hasDeliveryPhoto
+                  ? "Ask customer for the 4-digit verification code shown on their app."
+                  : "Complete Step 1 (package photo) above to unlock OTP verification."}
               </p>
+
               <Button
                 variant="brand"
                 size="lg"
                 fullWidth
+                disabled={!hasDeliveryPhoto}
                 onClick={() => setIsOtpModalOpen(true)}
-                icon={<KeyRound className="w-4 h-4" />}
-                className="font-bold shadow-xs py-3.5"
+                icon={
+                  hasDeliveryPhoto ? (
+                    <KeyRound className="w-4 h-4" />
+                  ) : (
+                    <Lock className="w-4 h-4" />
+                  )
+                }
+                className="font-bold py-3.5"
               >
-                Enter Delivery OTP & Complete
+                {hasDeliveryPhoto
+                  ? 'Enter Delivery OTP & Complete'
+                  : 'Take Photo First to Enter OTP'}
               </Button>
             </div>
 
-            {/* Delivery Photo & Alternative Handover Options */}
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleOpenProofCamera('DELIVERY')}
-                className="p-3 rounded-2xl border border-neutral-200 hover:border-[#009DE0] bg-white text-left transition cursor-pointer"
-              >
-                <Camera className="w-4 h-4 text-[#009DE0] mb-1" />
-                <h4 className="text-xs font-black text-neutral-900">
-                  {activeTask.deliveryProof ? 'Photo Attached ✓' : 'Delivery Photo'}
-                </h4>
-                <p className="text-[10px] text-neutral-500">Proof picture</p>
-              </button>
-
+            {/* Secondary Handover Edge Cases */}
+            <div className="pt-2 border-t border-neutral-100 grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setIsContactlessModalOpen(true)}
-                className="p-3 rounded-2xl border border-neutral-200 hover:border-[#009DE0] bg-white text-left transition cursor-pointer"
+                className="p-2.5 rounded-xl border border-neutral-200 hover:border-[#009DE0] bg-white text-center transition cursor-pointer"
               >
-                <ShieldCheck className="w-4 h-4 text-emerald-600 mb-1" />
-                <h4 className="text-xs font-black text-neutral-900">Contactless Drop</h4>
-                <p className="text-[10px] text-neutral-500">Doorstep drop</p>
+                <ShieldCheck className="w-4 h-4 text-neutral-700 mx-auto mb-1" />
+                <span className="text-[11px] font-bold text-neutral-800 block truncate">
+                  No Contact
+                </span>
               </button>
-            </div>
 
-            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setIsCodModalOpen(true)}
-                className="p-3 rounded-2xl border border-neutral-200 hover:border-amber-500 bg-white text-left transition cursor-pointer"
+                className="p-2.5 rounded-xl border border-neutral-200 hover:border-amber-500 bg-white text-center transition cursor-pointer"
               >
-                <Banknote className="w-4 h-4 text-amber-600 mb-1" />
-                <h4 className="text-xs font-black text-neutral-900">Cash on Delivery</h4>
-                <p className="text-[10px] text-neutral-500">Collect cash</p>
+                <Banknote className="w-4 h-4 text-neutral-700 mx-auto mb-1" />
+                <span className="text-[11px] font-bold text-neutral-800 block truncate">
+                  Collect Cash
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setIsUnreachableModalOpen(true)}
-                className="p-3 rounded-2xl border border-neutral-200 hover:border-rose-300 bg-white text-left transition cursor-pointer"
+                className="p-2.5 rounded-xl border border-neutral-200 hover:border-rose-300 bg-white text-center transition cursor-pointer"
               >
-                <Clock className="w-4 h-4 text-rose-600 mb-1" />
-                <h4 className="text-xs font-black text-neutral-900">Unreachable</h4>
-                <p className="text-[10px] text-neutral-500">5 min wait</p>
+                <Clock className="w-4 h-4 text-neutral-700 mx-auto mb-1" />
+                <span className="text-[11px] font-bold text-neutral-800 block truncate">
+                  Unreachable
+                </span>
               </button>
             </div>
           </div>
